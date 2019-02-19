@@ -1,0 +1,27 @@
+# Python cache
+*.pyc
+__pycache__/
+
+# IDEA
+.idea/
+
+# Virtual environments
+env/
+venv/
+
+# Private environment variables
+.env
+
+# Jupyter Notebook
+.ipynb_checkpoints/
+
+# Tensorboard
+launch_tensorboard.bat
+training_logs/
+
+# Training and output
+data/
+results/
+
+# Other
+sources.txt
