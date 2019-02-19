@@ -23,4 +23,13 @@ We don't want to go on each word of our 1M vector, we sample randomly words, we 
 Y_bath_indices UNION Negative_sampling_indices : check if intersection is empty. If yes, continue with back propagation.  
 Batch size ~ 256 max, this way we should have a empty intersection almost each time. If not empty, we use a random new samples in the paper the distribution.  
 
-Drawbacks : INPUT/OUTPUT is center-word -> context words. But on next bath, we can have other context words (for the same word ?). We try not to pick the same words from the context word selection.
+Drawbacks : INPUT/OUTPUT is center-word -> context words. But on next bath, we can have other context words (for the same word ?). We try not to pick the same words from the context word selection.  
+  
+Check the lecture of Andrew Ng on the negative sampling.  
+  
+## Work splitting
+Paul
+- read all the dataset function
+- implement function to save : the models, the id2word & word2id dic, also freq vector
+- add somewhere in the training a function that will store the model for instance every 10 epochs
+- check on colab if we can use CPU for more than 7h.
