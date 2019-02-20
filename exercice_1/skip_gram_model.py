@@ -257,7 +257,7 @@ class SkipGram:
                 print(self.compute_loss(x, y, y_ids))
             # loss_training_set.append(self.compute_loss(x, y, None))
 
-            if idx_epoch % save_model_every_n_epochs == 0:
+            if idx_epoch % save_model_every_n_epochs == 0 and idx_epoch != 0:
                 self.save_model(id_model=idx_epoch)
 
         # Plot
