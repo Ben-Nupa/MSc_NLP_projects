@@ -201,7 +201,7 @@ class SkipGram:
         return word_frequencies / np.sum(word_frequencies)
 
     def train(self, x, y, y_ids=None, n_epochs=10, batch_size=512, neg_sampling_size=5, learning_rate=1e-2,
-              decay_factor=1):
+              decay_factor=1, decay_interval=100):
         """
         Trains the model using mini-batch GD and stores the parameters as class variables. Also evaluates the cost
         function on the training set every epoch and plots it.
@@ -247,7 +247,7 @@ class SkipGram:
                 self.backward_pass(x_batch, y_batch, learning_rate)
 
             # Decay learning rate regularly
-            if idx_epoch % 2 == 0:
+            if idx_epoch % decay_interval == 0:
                 learning_rate *= decay_factor
             # Compute loss
             # loss_training_set.append(self.compute_loss(x, y, y_ids))

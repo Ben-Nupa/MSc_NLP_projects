@@ -45,7 +45,7 @@ if __name__ == '__main__':
 
     PATH_TO_DATA = 'data/1-billion-word-language-modeling-benchmark-r13output/training-monolingual.tokenized.shuffled'
 
-    sentences = text2sentences(PATH_TO_DATA + '/news.en-00001-of-00100')
+    sentences = text2sentences(PATH_TO_DATA + '/news.en-00001-of-00100', nb_lines=10)
     print('Number of sentences = ', len(sentences))
     word_to_id, id_to_word = map_words(sentences)
     print('Number of words = ', len(word_to_id))
@@ -68,7 +68,8 @@ if __name__ == '__main__':
     # comparison_sg.compare_gradients(x, y, None, 1e-5)
 
     sg = SkipGram(len(word_to_id), word_frequencies, 100)
-    sg.train(x, y, y_ids, n_epochs=100, batch_size=128, neg_sampling_size=5, learning_rate=1e-2, decay_factor=1)
+    sg.train(x, y, y_ids, n_epochs=5000, batch_size=128, neg_sampling_size=5, learning_rate=1e-2, decay_factor=0.99,
+             decay_interval=100)
 
     print('END = ', time.time() - begin)
 
