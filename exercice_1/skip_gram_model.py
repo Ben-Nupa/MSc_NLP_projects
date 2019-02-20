@@ -252,9 +252,9 @@ class SkipGram:
                 print("Performed epoch " + str(idx_epoch + 1) + "/" + str(n_epochs))
                 learning_rate *= decay_factor
             # Compute loss
-            # loss_training_set.append(self.compute_loss(x, y, y_ids))
-            if idx_epoch > 500:
-                print(self.compute_loss(x, y, y_ids))
+            loss_training_set.append(self.compute_loss(x, y, y_ids))
+            # if idx_epoch > 500:
+            #    print(self.compute_loss(x, y, y_ids))
             # loss_training_set.append(self.compute_loss(x, y, None))
 
             if idx_epoch % save_model_every_n_epochs == 0 and idx_epoch != 0:
