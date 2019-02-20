@@ -1,11 +1,13 @@
 import glob
 import re
-import numpy as np
+import pickle
 
 
-def display_data(data):
-    for line in data:
-        print(line)
+def display_data(data, number_of_lines=5):
+    i = 0
+    while i < number_of_lines:
+        print(data[i])
+        i += 1
 
 
 def read_dataset(
@@ -54,5 +56,38 @@ def read_dataset(
     return data
 
 
+def save_data(data, name_file):
+    """
+    Save the given data to the disk storing with provided name_file
+    :param data:
+    :param name_file:
+    :return:
+    """
+    with open(name_file + '.pkl', 'wb') as file:
+        pickle.dump(data, file)
 
-read_dataset()
+
+def load_data(name_file):
+    """
+    Load the data back with the provided name_file
+    :param name_file:
+    :return:
+    """
+    with open(name_file + '.pkl', 'rb') as file:
+        data = pickle.load(file)
+    return data
+
+
+def test():
+    """
+    Testing tools functions : read_dataset, save and restore data etc.
+    :return:
+    """
+    data = read_dataset()
+    path_save = "dataset"
+    save_data(data, path_save)
+    data = load_data(path_save)
+    display_data(data)
+
+
+test()
