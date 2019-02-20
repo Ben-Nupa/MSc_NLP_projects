@@ -78,7 +78,7 @@ class SkipGram:
             Size of negative sampling. Advised is 5 - 20 for small datasets and 2 - 5 for large datasets.
         """
         if y_ids is None:  # Don't use negative sampling: normal softmax computation
-            exp_s = np.exp(self.score)
+            exp_s = np.exp(self.score - np.max(self.score))
             self.probabilities = exp_s / np.sum(exp_s, axis=1).reshape(-1, 1)
 
         else:  # Do negative sampling
@@ -92,8 +92,8 @@ class SkipGram:
             neg_sampling_idx = np.append(neg_sampling_idx, np.array(y_ids) * np.arange(batch_size))
             neg_sampling_idx = np.unravel_index(neg_sampling_idx, self.probabilities.shape)  # Remap indices to 2D array
             # Compute softmax approximation
-            exp_s = np.exp(self.score[neg_sampling_idx])
-            self.probabilities[neg_sampling_idx] = exp_s / np.sum(exp_s)
+            exp_s = np.exp(self.score[neg_sampling_idx].reshape(-1, neg_sampling_size + 1))
+            self.probabilities[neg_sampling_idx] = (exp_s / np.sum(exp_s, axis=1).reshape(-1, 1)).flatten()
 
     def forward_pass(self, x, y_ids=None, neg_sampling_size=5):
         """
@@ -230,7 +230,6 @@ class SkipGram:
         self.initialize_weights()
         loss_training_set = []
         for idx_epoch in range(n_epochs):
-            print("Performing epoch " + str(idx_epoch + 1) + "/" + str(n_epochs))
             # Batch indices
             batch_indices = list(range(0, x.shape[0], batch_size))
             np.random.shuffle(batch_indices)
@@ -250,10 +249,13 @@ class SkipGram:
 
             # Decay learning rate regularly
             if idx_epoch % decay_interval == 0:
+                print("Performed epoch " + str(idx_epoch + 1) + "/" + str(n_epochs))
                 learning_rate *= decay_factor
             # Compute loss
             # loss_training_set.append(self.compute_loss(x, y, y_ids))
-            loss_training_set.append(self.compute_loss(x, y, None))
+            if idx_epoch > 500:
+                print(self.compute_loss(x, y, y_ids))
+            # loss_training_set.append(self.compute_loss(x, y, None))
 
             if idx_epoch % save_model_every_n_epochs == 0:
                 self.save_model(id_model=idx_epoch)
