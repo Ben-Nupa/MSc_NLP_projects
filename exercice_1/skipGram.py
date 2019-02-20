@@ -23,7 +23,7 @@ def loadPairs(path):
     return pairs
 
 
-if __name__ == '__main__':
+def main():
     # parser = argparse.ArgumentParser()
     # parser.add_argument('--text', help='path containing training data', required=True)
     # parser.add_argument('--model', help='path to store/read model (when training/testing)', required=True)
@@ -77,3 +77,7 @@ if __name__ == '__main__':
     print('END = ', time.time() - begin)
 
     plt.show()
+
+
+if __name__ == '__main__':
+    main()
