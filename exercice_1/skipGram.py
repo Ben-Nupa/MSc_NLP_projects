@@ -4,7 +4,7 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import time
 
-from exercice_1.skip_gram_model import SkipGram, SkipGram2
+from exercice_1.skip_gram_model import SkipGram
 from exercice_1.data_loader import *
 
 # useful stuff
@@ -56,6 +56,7 @@ if __name__ == '__main__':
     y = y.toarray()
 
     begin = time.time()
+
     # Verify the gradients
     # comparison_sg = SkipGram(len(word_to_id), word_frequencies, 100)
     # comparison_sg.w1 = np.random.uniform(-0.01, 0.01, size=comparison_sg.w1.shape)
