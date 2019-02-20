@@ -1,8 +1,12 @@
+SAVE_MODEL_EVERY_N_EPOCHS=10
+NUMBER_LINES = 50
+
 from __future__ import division
 import argparse
 import pandas as pd
 import matplotlib.pyplot as plt
 import time
+import glob
 
 from exercice_1.skip_gram_model import SkipGram
 from exercice_1.data_loader import *
@@ -48,7 +52,7 @@ def main():
 
     # Loading sentences
     # sentences = text2sentences(PATH_TO_DATA + '/news.en-00001-of-00100', nb_lines=10)
-    sentences = read_dataset(path_to_dataset_folder=PATH_TO_DATA, number_lines=500)
+    sentences = read_dataset(path_to_dataset_folder=PATH_TO_DATA, number_lines=NUMBER_LINES)
     print('Number of sentences = ', len(sentences))
     word_to_id, id_to_word = map_words(sentences)
     print('Number of words = ', len(word_to_id))
@@ -72,12 +76,11 @@ def main():
 
     sg = SkipGram(len(word_to_id), word_frequencies, 100)
     sg.train(x, y, y_ids, n_epochs=5000, batch_size=64, neg_sampling_size=5, learning_rate=1e-2, decay_factor=0.99,
-             decay_interval=100)
+             decay_interval=100, save_model_every_n_epochs=SAVE_MODEL_EVERY_N_EPOCHS)
 
     print('END = ', time.time() - begin)
 
     plt.show()
 
 
-if __name__ == '__main__':
-    main()
+main()
