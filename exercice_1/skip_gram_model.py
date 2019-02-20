@@ -41,8 +41,9 @@ class SkipGram:
         self.vocab_size = vocab_size
         self.embed_dim = embed_dim
 
-        self.neg_sampling_distrib = self.compute_negative_sampling_distribution(
-            word_frequencies)  # For negative sampling
+        # Negative sampling
+        self.neg_sampling_distrib = self.compute_negative_sampling_distribution(word_frequencies)
+        self.word_ids = np.arange(len(self.neg_sampling_distrib))
 
         # Network variables
         self.w1 = np.array([])  # Shape (vocab_size, embed_dim)
@@ -80,17 +81,18 @@ class SkipGram:
             self.probabilities = exp_s / np.sum(exp_s, axis=1).reshape(-1, 1)
 
         else:  # Do negative sampling
-            neg_sampling_idx = np.random.choice(np.arange(len(self.neg_sampling_distrib)), size=neg_sampling_size,
-                                                p=self.neg_sampling_distrib)
-            # Make sure we sample negative examples
-            while not set(neg_sampling_idx).intersection(set(y_ids)) == set():
-                neg_sampling_idx = np.random.choice(np.arange(len(self.neg_sampling_distrib)), size=neg_sampling_size,
-                                                    p=self.neg_sampling_distrib)
-
-            neg_sampling_idx = np.append(neg_sampling_idx, y_ids)
-            exp_s = np.exp(self.score[:, neg_sampling_idx])
+            batch_size = len(y_ids)
             self.probabilities = np.zeros(self.score.shape)
-            self.probabilities[:, neg_sampling_idx] = exp_s / np.sum(exp_s, axis=1).reshape(-1, 1)
+            # Sample negative indices, a different set for each line
+            neg_sampling_idx = np.random.choice(self.word_ids, size=batch_size * neg_sampling_size,
+                                                p=self.neg_sampling_distrib) * np.array(
+                [i for i in range(batch_size) for j in range(neg_sampling_size)])
+            # Add the batch examples
+            neg_sampling_idx = np.append(neg_sampling_idx, np.array(y_ids) * np.arange(batch_size))
+            neg_sampling_idx = np.unravel_index(neg_sampling_idx, self.probabilities.shape)  # Remap indices to 2D array
+            # Compute softmax approximation
+            exp_s = np.exp(self.score[neg_sampling_idx])
+            self.probabilities[neg_sampling_idx] = exp_s / np.sum(exp_s)
 
     def forward_pass(self, x, y_ids=None, neg_sampling_size=5):
         """
@@ -129,8 +131,10 @@ class SkipGram:
             Cross-entropy loss for the given batch.
         """
         self.forward_pass(x, y_ids)
-        loss = -np.log(np.sum(y * self.probabilities, axis=1))
-        # loss = -np.log(np.sum(y.multiply(self.probabilities), axis=1))
+        if type(y) == np.ndarray:
+            loss = -np.log(np.sum(y * self.probabilities, axis=1))  # If numpy arrays
+        else:
+            loss = -np.log(np.sum(y.multiply(self.probabilities), axis=1))  # If using sparse matrix
         return np.sum(loss) / x.shape[0]
 
     def compute_gradients(self, x, y):
@@ -196,7 +200,7 @@ class SkipGram:
         word_frequencies = word_frequencies ** exponent
         return word_frequencies / np.sum(word_frequencies)
 
-    def train(self, x, y, y_ids=None, n_epochs=10, batch_size=16, neg_sampling_size=5, learning_rate=1e-2,
+    def train(self, x, y, y_ids=None, n_epochs=10, batch_size=512, neg_sampling_size=5, learning_rate=1e-2,
               decay_factor=1):
         """
         Trains the model using mini-batch GD and stores the parameters as class variables. Also evaluates the cost
@@ -224,7 +228,7 @@ class SkipGram:
         self.initialize_weights()
         loss_training_set = []
         for idx_epoch in range(n_epochs):
-            print("Performing epoch " + str(idx_epoch) + "/" + str(n_epochs))
+            print("Performing epoch " + str(idx_epoch + 1) + "/" + str(n_epochs))
             # Batch indices
             batch_indices = list(range(0, x.shape[0], batch_size))
             np.random.shuffle(batch_indices)
@@ -246,7 +250,8 @@ class SkipGram:
             if idx_epoch % 2 == 0:
                 learning_rate *= decay_factor
             # Compute loss
-            loss_training_set.append(self.compute_loss(x, y, y_ids))
+            # loss_training_set.append(self.compute_loss(x, y, y_ids))
+            loss_training_set.append(self.compute_loss(x, y, None))
 
         # Plot
         fig = plt.figure()

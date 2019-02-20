@@ -44,16 +44,20 @@ if __name__ == '__main__':
     #         print(sg.similarity(a, b))
 
     PATH_TO_DATA = 'data/1-billion-word-language-modeling-benchmark-r13output/training-monolingual.tokenized.shuffled'
+
     sentences = text2sentences(PATH_TO_DATA + '/news.en-00001-of-00100')
-    print(np.shape(sentences))
+    print('Number of sentences = ', len(sentences))
     word_to_id, id_to_word = map_words(sentences)
-    print(len(word_to_id))
+    print('Number of words = ', len(word_to_id))
     x_ids, y_ids, word_frequencies = generate_ids_datasets(sentences, word_to_id, window_size=3)
     x, y = generate_matrices_datasets(x_ids, y_ids, len(word_to_id))
-    print(x.shape)
+    print('Training matrices shape = ', x.shape)
 
-    x = x.toarray()
-    y = y.toarray()
+    # Transform to CSR sparse matrix for memory issues
+    x = x.tocsr()
+    y = y.tocsr()
+    # x = x.toarray().astype(np.int8)
+    # y = y.toarray().astype(np.int8)
 
     begin = time.time()
 
@@ -61,14 +65,11 @@ if __name__ == '__main__':
     # comparison_sg = SkipGram(len(word_to_id), word_frequencies, 100)
     # comparison_sg.w1 = np.random.uniform(-0.01, 0.01, size=comparison_sg.w1.shape)
     # comparison_sg.w2 = np.random.uniform(-0.01, 0.01, size=comparison_sg.w2.shape)
-    # comparison_sg.compare_gradients(x, y, y_ids, 1e-5)
+    # comparison_sg.compare_gradients(x, y, None, 1e-5)
 
     sg = SkipGram(len(word_to_id), word_frequencies, 100)
-    sg.train(x, y, y_ids)
-
-    # sg = SkipGram2(len(word_to_id), 100)
-    # sg.train(x_ids, y_ids)
-
-    # plt.show()
+    sg.train(x, y, y_ids, n_epochs=100, batch_size=128, neg_sampling_size=5, learning_rate=1e-2, decay_factor=1)
 
     print('END = ', time.time() - begin)
+
+    plt.show()

@@ -4,7 +4,7 @@ from scipy.sparse import lil_matrix
 from typing import List, Tuple
 
 
-def text2sentences(path: str) -> List[List[str]]:
+def text2sentences(path: str, nb_lines=100) -> List[List[str]]:
     # feel free to make a better tokenization/pre-processing
     sentences = []
     with open(path, encoding='utf-8') as file:
@@ -12,8 +12,8 @@ def text2sentences(path: str) -> List[List[str]]:
             line = re.sub('-', ' ', line)  # Replace '-' by ' '
             line = re.sub(r'[^\w\s]', '', line)  # Remove punctuation
             sentences.append(line.lower().split())
-            print(sentences[-1])
-            break
+            if len(sentences) == nb_lines:
+                break
     return sentences
 
 
