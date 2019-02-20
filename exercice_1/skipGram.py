@@ -68,7 +68,7 @@ if __name__ == '__main__':
     # comparison_sg.compare_gradients(x, y, None, 1e-5)
 
     sg = SkipGram(len(word_to_id), word_frequencies, 100)
-    sg.train(x, y, y_ids, n_epochs=5000, batch_size=128, neg_sampling_size=5, learning_rate=1e-2, decay_factor=0.99,
+    sg.train(x, y, y_ids, n_epochs=5000, batch_size=64, neg_sampling_size=5, learning_rate=1e-2, decay_factor=0.99,
              decay_interval=100)
 
     print('END = ', time.time() - begin)
