@@ -1,5 +1,6 @@
 import numpy as np
 import matplotlib.pyplot as plt
+from exercice_1.tools import *
 
 
 class SkipGram:
@@ -201,7 +202,7 @@ class SkipGram:
         return word_frequencies / np.sum(word_frequencies)
 
     def train(self, x, y, y_ids=None, n_epochs=10, batch_size=512, neg_sampling_size=5, learning_rate=1e-2,
-              decay_factor=1, decay_interval=100):
+              decay_factor=1, decay_interval=100, save_model_every_n_epochs=500):
         """
         Trains the model using mini-batch GD and stores the parameters as class variables. Also evaluates the cost
         function on the training set every epoch and plots it.
@@ -225,6 +226,7 @@ class SkipGram:
         decay_factor : float
             Factor to decay the learning rate every 2 epochs.
         """
+        print("Will save model every", save_model_every_n_epochs, "epochs")
         self.initialize_weights()
         loss_training_set = []
         for idx_epoch in range(n_epochs):
@@ -252,6 +254,9 @@ class SkipGram:
             # Compute loss
             # loss_training_set.append(self.compute_loss(x, y, y_ids))
             loss_training_set.append(self.compute_loss(x, y, None))
+
+            if idx_epoch % save_model_every_n_epochs == 0:
+                self.save_model(id_model=idx_epoch)
 
         # Plot
         fig = plt.figure()
@@ -413,3 +418,25 @@ class SkipGram:
         relative_error_w2 = compute_relative_error(analytical_grad_w2, numerical_grad_w2)
         print('Error gradient w1 =', np.mean(relative_error_w1))
         print('Error gradient w2 =', np.mean(relative_error_w2))
+
+    def save_model(self, id_model):
+        """
+        Save the model using the save data methods in the tools module
+        :param id_model: integer, this id will be used to name the model
+        :return: void
+        """
+        save_name = "save_model-" + str(id_model)
+        print("Saving model as", save_name)
+        save_data(data=[self.w1, self.h, self.w2, self.score, self.probabilities], name_file=save_name)
+
+    def load_model(self, id_model):
+        """
+        Load the model using a provided id to generate its name
+        :param id_model: integer
+        :return: void
+        """
+        save_name = "save_model-" + str(id_model)
+        print("Loading model as", save_name)
+        self.w1, self.h, self.w2, self.score, self.probabilities = load_data("save_model-" + str(id_model))
+
+

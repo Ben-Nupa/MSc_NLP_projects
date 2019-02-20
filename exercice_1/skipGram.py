@@ -6,14 +6,15 @@ import time
 
 from exercice_1.skip_gram_model import SkipGram
 from exercice_1.data_loader import *
+from exercice_1.tools import *
 
 # useful stuff
 import numpy as np
 # from scipy.special import expit
 from sklearn.preprocessing import normalize
 
-__authors__ = ['author1', 'author2', 'author3']
-__emails__ = ['fatherchristmoas@northpole.dk', 'toothfairy@blackforest.no', 'easterbunny@greenfield.de']
+__authors__ = ['Benoit Laures', 'Ayush Rai', 'Paul Asquin']
+__emails__ = ['benoit.laures@student.ecp.fr', 'ayush.rai2512@student-cs.fr', 'paul.asquin@student.ecp.fr']
 
 
 def loadPairs(path):
@@ -45,7 +46,9 @@ if __name__ == '__main__':
 
     PATH_TO_DATA = 'data/1-billion-word-language-modeling-benchmark-r13output/training-monolingual.tokenized.shuffled'
 
-    sentences = text2sentences(PATH_TO_DATA + '/news.en-00001-of-00100', nb_lines=10)
+    # Loading sentences
+    # sentences = text2sentences(PATH_TO_DATA + '/news.en-00001-of-00100', nb_lines=10)
+    sentences = read_dataset(path_to_dataset_folder=PATH_TO_DATA, number_lines=500)
     print('Number of sentences = ', len(sentences))
     word_to_id, id_to_word = map_words(sentences)
     print('Number of words = ', len(word_to_id))

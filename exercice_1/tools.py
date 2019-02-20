@@ -30,7 +30,7 @@ def read_dataset(
     print("Found", str(len(files)), "files to read.")
 
     # Init regex to remove non alphanumerical characters, still we keep spaces and '
-    regex = re.compile("[^0-9a-zA-Z ']+")
+    regex = re.compile("[^0-9a-z ']+")
 
     data = []
     id_file = 0
@@ -45,7 +45,7 @@ def read_dataset(
                 # While we are not in the end of the file and we haven't filled the data list
 
                 # Removing unwanted characters
-                processed_line = regex.sub('', line)
+                processed_line = regex.sub('', line.lower())
                 data.append(processed_line)
 
                 # refresh line value
@@ -90,4 +90,4 @@ def test():
     display_data(data)
 
 
-test()
+# test()
