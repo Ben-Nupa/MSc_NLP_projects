@@ -79,7 +79,10 @@ class SkipGram:
         """
         if y_ids is None:  # Don't use negative sampling: normal softmax computation
             exp_s = np.exp(self.score - np.max(self.score))
-            self.probabilities = exp_s / np.sum(exp_s, axis=1).reshape(-1, 1)
+            exp_s_sum = np.sum(exp_s, axis=1).reshape(-1, 1)
+            print("exp_s", exp_s)
+            print("exp_s sum", exp_s_sum)
+            self.probabilities = exp_s / exp_s_sum
 
         else:  # Do negative sampling
             batch_size = len(y_ids)
@@ -113,12 +116,6 @@ class SkipGram:
         self.score = self.h.dot(self.w2)
         self.softmax(y_ids, neg_sampling_size)
 
-    def check_no_zero_line(self, y):
-        for i, line in enumerate(y):
-            if line == np.zeros(len(line)):
-                raise ValueError("The line " + str(i) + " in y is made of 0")
-        return True
-
     def compute_loss(self, x, y, y_ids=None) -> float:
         """
         Computes the cross-entropy loss function.
@@ -139,14 +136,21 @@ class SkipGram:
         """
         self.forward_pass(x, y_ids)
 
-        if self.check_no_zero_line(y):
-            pass
+        # if self.check_no_zero_line(self.probabilities):
+        #    pass
 
         if type(y) == np.ndarray:
+            # print(self.probabilities)
+            # print(np.sum(y * self.probabilities, axis=1))
             loss = -np.log(np.sum(y * self.probabilities, axis=1))  # If numpy arrays
+            # print(loss)
         else:
+            # print(self.probabilities)
             loss = -np.log(np.sum(y.multiply(self.probabilities), axis=1))  # If using sparse matrix
+            # print(loss)
         return np.sum(loss) / x.shape[0]
+
+
 
     def compute_gradients(self, x, y):
         """
@@ -264,14 +268,14 @@ class SkipGram:
                 learning_rate *= decay_factor
             # Compute loss
             loss_value = self.compute_loss(x, y, y_ids)
-            print(loss_value)
+            # print(loss_value)
             loss_training_set.append(loss_value)
 
             # if idx_epoch > 500:
             #    print(self.compute_loss(x, y, y_ids))
             # loss_training_set.append(self.compute_loss(x, y, None))
             loss_value_none = self.compute_loss(x, y, None)
-            print(loss_value_none)
+            # print(loss_value_none)
 
             if idx_epoch % save_model_every_n_epochs == 0 and idx_epoch != 0:
                 self.save_model(id_model=idx_epoch)
