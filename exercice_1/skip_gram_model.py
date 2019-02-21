@@ -63,7 +63,12 @@ class SkipGram:
         """
         self.w1 = np.random.uniform(-1 / (2 * self.embed_dim), 1 / (2 * self.embed_dim),
                                     size=(self.vocab_size, self.embed_dim))
-        self.w2 = np.zeros((self.embed_dim, self.vocab_size))
+
+        # self.w2 = np.zeros((self.embed_dim, self.vocab_size))
+
+        self.w2 = np.random.uniform(-1 / (2 * self.embed_dim), 1 / (2 * self.embed_dim),
+                                    size=(self.embed_dim, self.vocab_size))
+
 
     def softmax(self, y_ids=None, neg_sampling_size=5):
         """
@@ -78,10 +83,14 @@ class SkipGram:
             Size of negative sampling. Advised is 5 - 20 for small datasets and 2 - 5 for large datasets.
         """
         if y_ids is None:  # Don't use negative sampling: normal softmax computation
-            exp_s = np.exp(self.score - np.max(self.score))
+
+            clip_score = self.score # - np.max(self.score)
+            clip_score = np.clip(clip_score, -10, 10)
+            exp_s = np.exp(clip_score)
             exp_s_sum = np.sum(exp_s, axis=1).reshape(-1, 1)
-            print("exp_s", exp_s)
-            print("exp_s sum", exp_s_sum)
+            exp_s_sum = np.clip(exp_s_sum, 0, 100)
+            # print("exp_s", exp_s)
+            # print("exp_s sum", exp_s_sum)
             self.probabilities = exp_s / exp_s_sum
 
         else:  # Do negative sampling
@@ -95,8 +104,13 @@ class SkipGram:
             neg_sampling_idx = np.append(neg_sampling_idx, np.array(y_ids) * np.arange(batch_size))
             neg_sampling_idx = np.unravel_index(neg_sampling_idx, self.probabilities.shape)  # Remap indices to 2D array
             # Compute softmax approximation
-            exp_s = np.exp(self.score[neg_sampling_idx].reshape(-1, neg_sampling_size + 1))
-            self.probabilities[neg_sampling_idx] = (exp_s / np.sum(exp_s, axis=1).reshape(-1, 1)).flatten()
+            clip_score = self.score[neg_sampling_idx].reshape(-1, neg_sampling_size + 1)
+            clip_score = np.clip(clip_score, -10, 10)
+            exp_s = np.exp(clip_score)
+            exp_s_sum = np.sum(exp_s, axis=1).reshape(-1, 1)
+            exp_s_sum = np.clip(exp_s_sum, 0, 100)
+            # print("exp_s_sum", exp_s_sum)
+            self.probabilities[neg_sampling_idx] = (exp_s / (exp_s_sum)).flatten()
 
     def forward_pass(self, x, y_ids=None, neg_sampling_size=5):
         """
@@ -135,19 +149,13 @@ class SkipGram:
             Cross-entropy loss for the given batch.
         """
         self.forward_pass(x, y_ids)
-
-        # if self.check_no_zero_line(self.probabilities):
-        #    pass
+        # print("proba", self.probabilities)
+        # print("sum y proba", np.sum(y.multiply(self.probabilities), axis=1))
 
         if type(y) == np.ndarray:
-            # print(self.probabilities)
-            # print(np.sum(y * self.probabilities, axis=1))
-            loss = -np.log(np.sum(y * self.probabilities, axis=1))  # If numpy arrays
-            # print(loss)
+            loss = -np.log(np.sum(y * self.probabilities, axis=1) + np.exp(1))   # If numpy arrays
         else:
-            # print(self.probabilities)
-            loss = -np.log(np.sum(y.multiply(self.probabilities), axis=1))  # If using sparse matrix
-            # print(loss)
+            loss = -np.log(np.sum(y.multiply(self.probabilities), axis=1) + np.exp(1))  # If using sparse matrix
         return np.sum(loss) / x.shape[0]
 
 
@@ -174,6 +182,13 @@ class SkipGram:
 
         g = g.dot(self.w2.T)  # Shape (-1, embed_dim)
         grad_w1 = x.T.dot(g)  # Shape (vocab_size, embed_dim)
+
+        grad_w1 = np.clip(grad_w1, 0.01, 20)
+        grad_w2 = np.clip(grad_w2, 0.01, 20)
+
+
+        # print("grad_w1", grad_w1)
+        # print("grad_w2", grad_w2)
 
         return grad_w1, grad_w2
 
@@ -268,7 +283,7 @@ class SkipGram:
                 learning_rate *= decay_factor
             # Compute loss
             loss_value = self.compute_loss(x, y, y_ids)
-            # print(loss_value)
+            print("loss:", loss_value)
             loss_training_set.append(loss_value)
 
             # if idx_epoch > 500:

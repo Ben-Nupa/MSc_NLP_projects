@@ -1,5 +1,5 @@
-SAVE_MODEL_EVERY_N_EPOCHS = 100
-NUMBER_LINES = 100
+SAVE_MODEL_EVERY_N_EPOCHS = 50
+NUMBER_LINES = 200
 N_EPOCHS = 100
 DECAY_INTERVAL = 10
 
@@ -55,6 +55,8 @@ def main():
     # Loading sentences
     # sentences = text2sentences(PATH_TO_DATA + '/news.en-00001-of-00100', nb_lines=10)
     sentences = read_dataset(path_to_dataset_folder=PATH_TO_DATA, number_lines=NUMBER_LINES)
+    # print(sentences)
+
     print('Number of sentences = ', len(sentences))
     word_to_id, id_to_word = map_words(sentences)
     print('Number of words = ', len(word_to_id))
@@ -76,11 +78,11 @@ def main():
     # comparison_sg.w2 = np.random.uniform(-0.01, 0.01, size=comparison_sg.w2.shape)
     # comparison_sg.compare_gradients(x, y, None, 1e-5)
 
-    sg = SkipGram(len(word_to_id), word_frequencies, 100)
-    sg.train(x, y, y_ids, n_epochs=N_EPOCHS, batch_size=64, neg_sampling_size=5, learning_rate=1e-2, decay_factor=0.99,
+    sg = SkipGram(len(word_to_id), word_frequencies, embed_dim=50)
+    sg.train(x, y, y_ids, n_epochs=N_EPOCHS, batch_size=16, neg_sampling_size=5, learning_rate=1e-1, decay_factor=0.99,
              decay_interval=DECAY_INTERVAL, save_model_every_n_epochs=SAVE_MODEL_EVERY_N_EPOCHS)
 
-    print('END = ', time.time() - begin)
+    print('END = ', time.time() - begin, "seconds")
 
     plt.show()
 

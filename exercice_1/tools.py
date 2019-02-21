@@ -46,7 +46,9 @@ def read_dataset(
 
                 # Removing unwanted characters
                 processed_line = regex.sub('', line.lower())
-                data.append(processed_line)
+                final_line = processed_line.replace("  ", " ").split(" ")
+                final_line.pop()
+                data.append(final_line)
 
                 # refresh line value
                 line = current_file.readline()
