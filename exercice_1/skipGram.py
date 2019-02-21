@@ -3,7 +3,7 @@ NUMBER_LINES = 100
 N_EPOCHS = 100
 DECAY_INTERVAL = 10
 
-from __future__ import division
+# from __future__ import division
 import argparse
 import pandas as pd
 import matplotlib.pyplot as plt

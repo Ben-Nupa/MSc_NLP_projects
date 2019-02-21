@@ -113,6 +113,12 @@ class SkipGram:
         self.score = self.h.dot(self.w2)
         self.softmax(y_ids, neg_sampling_size)
 
+    def check_no_zero_line(self, y):
+        for i, line in enumerate(y):
+            if line == np.zeros(len(line)):
+                raise ValueError("The line " + str(i) + " in y is made of 0")
+        return True
+
     def compute_loss(self, x, y, y_ids=None) -> float:
         """
         Computes the cross-entropy loss function.
@@ -132,6 +138,10 @@ class SkipGram:
             Cross-entropy loss for the given batch.
         """
         self.forward_pass(x, y_ids)
+
+        if self.check_no_zero_line(y):
+            pass
+
         if type(y) == np.ndarray:
             loss = -np.log(np.sum(y * self.probabilities, axis=1))  # If numpy arrays
         else:
@@ -447,5 +457,3 @@ class SkipGram:
         save_name = "save_model-" + str(id_model)
         print("Loading model as", save_name)
         self.w1, self.h, self.w2, self.score, self.probabilities = load_data("save_model-" + str(id_model))
-
-
