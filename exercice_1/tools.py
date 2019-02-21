@@ -1,6 +1,5 @@
 import glob
 import re
-import pickle
 
 
 def display_data(data, number_of_lines=5):
@@ -30,7 +29,7 @@ def read_dataset(
     print("Found", str(len(files)), "files to read.")
 
     # Init regex to remove non alphanumerical characters, still we keep spaces and '
-    regex = re.compile("[^0-9a-z ']+")
+    regex = re.compile("[^a-z ']+")
 
     data = []
     id_file = 0
@@ -57,7 +56,7 @@ def read_dataset(
     print("Finished reading")
     return data
 
-
+'''
 def save_data(data, name_file):
     """
     Save the given data to the disk storing with provided name_file
@@ -65,7 +64,7 @@ def save_data(data, name_file):
     :param name_file:
     :return:
     """
-    with open(name_file + '.pkl', 'wb') as file:
+    with open(name_file, 'wb') as file:
         pickle.dump(data, file)
 
 
@@ -75,7 +74,7 @@ def load_data(name_file):
     :param name_file:
     :return:
     """
-    with open(name_file + '.pkl', 'rb') as file:
+    with open(name_file, 'rb') as file:
         data = pickle.load(file)
     return data
 
@@ -91,5 +90,4 @@ def test():
     data = load_data(path_save)
     display_data(data)
 
-
-# test()
+'''

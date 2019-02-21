@@ -1,5 +1,17 @@
 # NLP Homework
 
+# To run the code
+
+# Train
+```bash
+python3 skipGram.py --text data/1-billion-word-language-modeling-benchmark-r13output/training-monolingual.tokenized.shuffled --model model.pkl
+```
+# Test
+```bash
+python3 skipGram.py --text data/EN-SIMLEX-999.txt --model model.pkl --test
+```
+If the similarity score given is `-1`, this means we didn't had this word in our vocabulary.
+
 ## TODO
 - Function to read all the files, one by one.  
 - Then, we need to finish the negative sampling part (already begun by Benoit)  

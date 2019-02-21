@@ -1,6 +1,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
-from exercice_1.tools import *
+from tools import *
+import pickle
 
 
 class SkipGram:
@@ -37,8 +38,9 @@ class SkipGram:
         Probability vector in the sparse space, after the softmax.
     """
 
-    def __init__(self, vocab_size: int, word_frequencies: np.ndarray, embed_dim=100):
+    def __init__(self, vocab_size: int, word_frequencies: np.ndarray, embed_dim=100, id_to_word=None):
         # Dimensions
+        self.id_to_word = id_to_word
         self.vocab_size = vocab_size
         self.embed_dim = embed_dim
 
@@ -52,6 +54,7 @@ class SkipGram:
         self.w2 = np.array([])  # Shape (embed_dim, vocab_size)
         self.score = np.array([])  # Shape (-1, vocab_size)
         self.probabilities = np.array([])  # Shape (-1, vocab_size)
+        self.x = None
 
         self.initialize_weights()
 
@@ -231,7 +234,7 @@ class SkipGram:
         return word_frequencies / np.sum(word_frequencies)
 
     def train(self, x, y, y_ids=None, n_epochs=10, batch_size=512, neg_sampling_size=5, learning_rate=1e-2,
-              decay_factor=1, decay_interval=100, save_model_every_n_epochs=500):
+              decay_factor=1, decay_interval=100):
         """
         Trains the model using mini-batch GD and stores the parameters as class variables. Also evaluates the cost
         function on the training set every epoch and plots it.
@@ -255,8 +258,8 @@ class SkipGram:
         decay_factor : float
             Factor to decay the learning rate every 2 epochs.
         """
-        print("Settings 1")
-        print("Will save model every", save_model_every_n_epochs, "epochs")
+        # Saving x for the model storage
+        self.x = x
         self.initialize_weights()
         loss_training_set = []
         for idx_epoch in range(n_epochs):
@@ -292,11 +295,9 @@ class SkipGram:
             loss_value_none = self.compute_loss(x, y, None)
             # print(loss_value_none)
 
-            if idx_epoch % save_model_every_n_epochs == 0 and idx_epoch != 0:
-                self.save_model(id_model=idx_epoch)
-
         # Plot
         fig = plt.figure()
+        plt.title("Evolution of training loss through epochs")
         plt.xlabel("Epoch")
         plt.ylabel("Loss")
         print("len loss training set", len(loss_training_set))
@@ -333,7 +334,31 @@ class SkipGram:
         return x.dot(self.w1)
 
     def save(self, path):
-        raise NotImplementedError('implement it!')
+        """
+        Save the model using the save data methods in the tools module
+        :param id_model: integer, this id will be used to name the model
+        :return: void
+        """
+        # Compute embed
+        embed = self.embed(self.x)
+        dictio = {}
+        # for each id in the embed rows
+        for id in range(embed.shape[0]):
+            # load the corresponding name
+            try:
+                word_name = self.id_to_word[id]
+                if word_name in dictio.keys():
+                    # If we already have this key
+                    continue
+                else:
+                    print("word_name", word_name)
+                    dictio[word_name] = embed[id]
+            except KeyError:
+                # If we don't have this word in our vocabulary, just pass
+                continue
+
+        with open(path, 'wb') as file:
+            pickle.dump(dictio, file)
 
     def similarity(self, word1, word2) -> float:
         """
@@ -355,9 +380,12 @@ class SkipGram:
         word2_embedded = self.embed(word2)
         return word1_embedded.dot(word2_embedded) / (np.linalg.norm(word1_embedded) * np.linalg.norm(word2_embedded))
 
+
     @staticmethod
     def load(path):
-        raise NotImplementedError('implement it!')
+        with open(path, 'rb') as file:
+            dictio = pickle.load(file)
+        return dictio
 
     def compute_grads_num_slow(self, x, y, y_ids, step):
         """
@@ -456,7 +484,7 @@ class SkipGram:
         relative_error_w2 = compute_relative_error(analytical_grad_w2, numerical_grad_w2)
         print('Error gradient w1 =', np.mean(relative_error_w1))
         print('Error gradient w2 =', np.mean(relative_error_w2))
-
+'''
     def save_model(self, id_model):
         """
         Save the model using the save data methods in the tools module
@@ -476,3 +504,4 @@ class SkipGram:
         save_name = "save_model-" + str(id_model)
         print("Loading model as", save_name)
         self.w1, self.h, self.w2, self.score, self.probabilities = load_data("save_model-" + str(id_model))
+'''
