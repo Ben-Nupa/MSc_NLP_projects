@@ -286,7 +286,7 @@ class SkipGram:
                 learning_rate *= decay_factor
             # Compute loss
             loss_value = self.compute_loss(x, y, y_ids)
-            print("loss:", loss_value)
+            # print("loss:", loss_value)
             loss_training_set.append(loss_value)
 
             # if idx_epoch > 500:
@@ -300,7 +300,7 @@ class SkipGram:
         plt.title("Evolution of training loss through epochs")
         plt.xlabel("Epoch")
         plt.ylabel("Loss")
-        print("len loss training set", len(loss_training_set))
+        # print("len loss training set", len(loss_training_set))
         plt.plot(np.arange(1, n_epochs + 1), loss_training_set, label="Training set")
         plt.legend()
 
@@ -351,7 +351,7 @@ class SkipGram:
                     # If we already have this key
                     continue
                 else:
-                    print("word_name", word_name)
+                    # print("word_name", word_name)
                     dictio[word_name] = embed[id]
             except KeyError:
                 # If we don't have this word in our vocabulary, just pass

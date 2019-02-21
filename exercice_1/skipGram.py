@@ -1,4 +1,3 @@
-SAVE_MODEL_EVERY_N_EPOCHS = 10
 NUMBER_LINES = 200
 N_EPOCHS = 10
 DECAY_INTERVAL = 5
@@ -64,7 +63,7 @@ if __name__ == "__main__":
         sg = SkipGram(len(word_to_id), word_frequencies, embed_dim=50, id_to_word=id_to_word)
         sg.train(x, y, y_ids, n_epochs=N_EPOCHS, batch_size=16, neg_sampling_size=5, learning_rate=1e-1,
                  decay_factor=0.99,
-                 decay_interval=DECAY_INTERVAL, save_model_every_n_epochs=SAVE_MODEL_EVERY_N_EPOCHS
+                 decay_interval=DECAY_INTERVAL
                  )
 
         sg.save(opts.model)
