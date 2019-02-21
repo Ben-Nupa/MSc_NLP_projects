@@ -1,5 +1,7 @@
-SAVE_MODEL_EVERY_N_EPOCHS=10
-NUMBER_LINES = 50
+SAVE_MODEL_EVERY_N_EPOCHS = 100
+NUMBER_LINES = 100
+N_EPOCHS = 100
+DECAY_INTERVAL = 10
 
 from __future__ import division
 import argparse
@@ -75,8 +77,8 @@ def main():
     # comparison_sg.compare_gradients(x, y, None, 1e-5)
 
     sg = SkipGram(len(word_to_id), word_frequencies, 100)
-    sg.train(x, y, y_ids, n_epochs=5000, batch_size=64, neg_sampling_size=5, learning_rate=1e-2, decay_factor=0.99,
-             decay_interval=100, save_model_every_n_epochs=SAVE_MODEL_EVERY_N_EPOCHS)
+    sg.train(x, y, y_ids, n_epochs=N_EPOCHS, batch_size=64, neg_sampling_size=5, learning_rate=1e-2, decay_factor=0.99,
+             decay_interval=DECAY_INTERVAL, save_model_every_n_epochs=SAVE_MODEL_EVERY_N_EPOCHS)
 
     print('END = ', time.time() - begin)
 

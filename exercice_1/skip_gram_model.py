@@ -226,6 +226,7 @@ class SkipGram:
         decay_factor : float
             Factor to decay the learning rate every 2 epochs.
         """
+        print("Settings 1")
         print("Will save model every", save_model_every_n_epochs, "epochs")
         self.initialize_weights()
         loss_training_set = []
@@ -252,10 +253,15 @@ class SkipGram:
                 print("Performed epoch " + str(idx_epoch + 1) + "/" + str(n_epochs))
                 learning_rate *= decay_factor
             # Compute loss
-            loss_training_set.append(self.compute_loss(x, y, y_ids))
+            loss_value = self.compute_loss(x, y, y_ids)
+            print(loss_value)
+            loss_training_set.append(loss_value)
+
             # if idx_epoch > 500:
             #    print(self.compute_loss(x, y, y_ids))
             # loss_training_set.append(self.compute_loss(x, y, None))
+            loss_value_none = self.compute_loss(x, y, None)
+            print(loss_value_none)
 
             if idx_epoch % save_model_every_n_epochs == 0 and idx_epoch != 0:
                 self.save_model(id_model=idx_epoch)
@@ -264,6 +270,7 @@ class SkipGram:
         fig = plt.figure()
         plt.xlabel("Epoch")
         plt.ylabel("Loss")
+        print("len loss training set", len(loss_training_set))
         plt.plot(np.arange(1, n_epochs + 1), loss_training_set, label="Training set")
         plt.legend()
 
