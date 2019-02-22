@@ -21,6 +21,20 @@ To test, type:
 python3 skipGram.py --text data/EN-SIMLEX-999.txt --model model.pkl --test
 ```
 
+## Default parameters
+Here as the default paramters you will find when launching the training:
+- Number of lines = 100000
+- Size of context window = 3
+- Number of epochs = 500
+- Embedded size = 300
+- Number of words sampled for negative sampling = 5
+- Size of 1 batch = 256
+- Initial learning rate value = 5e-3
+- Decay factor of the learning rate = 0.99
+- Interval of epochs between 2 decays = 5
+
+All these parameters are defined as global variables and can be changed in the file `skipGram.py`.
+
 ## Pipeline
 One-hot encoding of data:
 - Read file line by line until the desired number of lines is achieved
