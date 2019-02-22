@@ -57,4 +57,10 @@ A big issue we faced and that we spent a very long time on was the exploding gra
 Besides, the model has to be trained on an enormous amount of data to display good results, thus it must undergo a very long phase of training (more than a day) which is very hard to perform analysis, optimizing parameters or just tests.
 
 ## Sources
-- [1](http://cs231n.github.io/neural-networks-3/)
+- [1](http://cs231n.github.io/neural-networks-3/): Stanford 231n course additional material: used for good techniques to verify a neural network from scratch is well implemented (Ex: compare the analytical and numerical gradients)
+- [2](http://mccormickml.com/2016/04/19/word2vec-tutorial-the-skip-gram-model/) Blog post explaining Word2Vec and the skip-gram model as well as what is negative sampling.
+- [3](https://github.com/chrisjmccormick/word2vec_commented) Original Word2Vec C code commented to get ideas of how it was implemented.
+- [4](http://building-babylon.net/2015/07/13/word2vec-weight-initialisation/) Initialisation used in Word2Vec for the layers
+- [5](https://nathanrooy.github.io/posts/2018-03-22/word2vec-from-scratch-with-python-and-numpy/), [6](https://towardsdatascience.com/word2vec-from-scratch-with-numpy-8786ddd49e72), [7](https://towardsdatascience.com/an-implementation-guide-to-word2vec-using-numpy-and-google-sheets-13445eebd281) Blogs about implementing Word2Vec from scratch in Python: we took some inspirations to build our model (especially the computation of the gradients).
+- [8](https://www.cs.bgu.ac.il/~yoavg/publications/negative-sampling.pdf) Paper from the given ressources explaining in depth what is negative sampling.
+- [9](https://arxiv.org/abs/1301.3781) Word2Vec original paper
