@@ -1,17 +1,5 @@
-NUMBER_LINES = 100
-N_EPOCHS = 10
-DECAY_INTERVAL = 5
-EMBEDDED_SIZE = 50
-BATCH_SIZE = 64
-NEGATIVE_SAMPLING_SIZE = 3
-WINDOW_SIZE = 3
-LEARNING_RATE = 1e-2
-DECAY_FACTOR = 0.99
-BATCH_SIZE = 256
-
 import argparse
 import pandas as pd
-import matplotlib.pyplot as plt
 import numpy as np
 
 from skip_gram_model import SkipGram
@@ -21,6 +9,16 @@ from tools import *
 __authors__ = ['Benoit Laures', 'Ayush Rai', 'Paul Asquin']
 __emails__ = ['benoit.laures@student.ecp.fr', 'ayush.rai2512@student-cs.fr', 'paul.asquin@student.ecp.fr']
 
+NUMBER_LINES = 1000
+N_EPOCHS = 50
+DECAY_INTERVAL = 5
+EMBEDDED_SIZE = 50
+NEGATIVE_SAMPLING_SIZE = 5
+WINDOW_SIZE = 3
+LEARNING_RATE = 5e-3
+DECAY_FACTOR = 0.99
+BATCH_SIZE = 256
+
 
 def loadPairs(path):
     colomns = ['word1', 'word2', 'similarity']
@@ -29,13 +27,29 @@ def loadPairs(path):
     return list(pairs)
 
 
-def similarity(word1, word2, dictio):
+def similarity(word1: str, word2: str, saved_model: dict) -> float:
+    """
+    Computes the cosine similarity between the 2 given words.
+
+    Parameters
+    ----------
+    word1, word2 : str
+        Input words.
+    saved_model : dict
+        Loaded model from previous training.
+
+    Returns
+    ----------
+    out : float
+        Cosine similarity.
+    """
     try:
-        word1_embed = dictio[word1]
-        word2_embed = dictio[word1]
-    except KeyError:
+        word1_embed = saved_model[word1]
+        word2_embed = saved_model[word2]
+    except KeyError:  # One word is unknown
         return -1
 
+    print(word1_embed.shape)
     return word1_embed.dot(word2_embed) / (np.linalg.norm(word1_embed) * np.linalg.norm(word2_embed))
 
 
@@ -49,21 +63,21 @@ if __name__ == "__main__":
 
     if not opts.test:
         # sentences = text2sentences(opts.text)
-        print("Loading from", opts.text)
+        # print("Loading from", opts.text)
         sentences = read_dataset(path_to_dataset_folder=opts.text, number_lines=NUMBER_LINES)
-        print('Number of sentences = ', len(sentences))
+        # print('Number of sentences = ', len(sentences))
         word_to_id, id_to_word = map_words(sentences)
-        print('Number of words = ', len(word_to_id))
+        # print('Number of words = ', len(word_to_id))
         x_ids, y_ids, word_frequencies = generate_ids_datasets(sentences, word_to_id, window_size=WINDOW_SIZE)
         x, y = generate_matrices_datasets(x_ids, y_ids, len(word_to_id))
-        print('Training matrices shape = ', x.shape)
+        # print('Training matrices shape = ', x.shape)
 
         x = x.tocsr()
         y = y.tocsr()
 
         sg = SkipGram(len(word_to_id), word_frequencies, embed_dim=EMBEDDED_SIZE, id_to_word=id_to_word)
         sg.train(x, y, y_ids, n_epochs=N_EPOCHS, batch_size=BATCH_SIZE, neg_sampling_size=NEGATIVE_SAMPLING_SIZE,
-                 learning_rate=LEARNING_RATE,  decay_factor=DECAY_FACTOR, decay_interval=DECAY_INTERVAL)
+                 learning_rate=LEARNING_RATE, decay_factor=DECAY_FACTOR, decay_interval=DECAY_INTERVAL)
 
         sg.save(opts.model)
 
@@ -73,4 +87,3 @@ if __name__ == "__main__":
 
         for a, b, _ in pairs:
             print(a, b, similarity(a, b, dictio))
-

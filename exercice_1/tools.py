@@ -3,12 +3,7 @@ import re
 
 
 def display_data(data, number_of_lines=5):
-    """
-    Display the dataset line by line to check the read_dataset function
-    :param data:
-    :param number_of_lines:
-    :return:
-    """
+    """Display the dataset line by line to check the read_dataset function."""
     i = 0
     while i < number_of_lines:
         print(data[i])
@@ -19,10 +14,19 @@ def read_dataset(
         path_to_dataset_folder='data/1-billion-word-language-modeling-benchmark-r13output/training-monolingual.tokenized.shuffled',
         number_lines=10 ** 6):
     """
-    Read the dataset
-    :param path_to_dataset_folder: str, path
-    :param number_lines: lines to be extracted (10**6 by default)
-    :return: array of words
+    Read the given dataset.
+
+    Parameters
+    ----------
+    path_to_dataset_folder : str
+        Relative path.
+    number_lines : int
+        Lines to be extracted (10**6 by default)
+
+    Returns
+    ----------
+    out : List[List[str]]
+        List of sentences where sentences are list of words.
     """
 
     # Getting files in the dataset folder
@@ -32,7 +36,7 @@ def read_dataset(
     files.sort()
 
     # Printing number of found files
-    print("Found", str(len(files)), "files to read.")
+    # print("Found", str(len(files)), "files to read.")
 
     # Init regex to remove non alphanumerical characters, still we keep spaces and '
     regex = re.compile("[^a-z ']+")
@@ -41,7 +45,7 @@ def read_dataset(
     id_file = 0
     while len(data) < number_lines:
         with open(files[id_file], encoding='utf-8') as current_file:
-            print("Opening file n°" + str(id_file) + ". Wrote " + str(len(data)) + "/" + str(number_lines))
+            # print("Opening file n°" + str(id_file) + ". Wrote " + str(len(data)) + "/" + str(number_lines))
 
             # Init line
             line = current_file.readline()
@@ -59,5 +63,5 @@ def read_dataset(
                 line = current_file.readline()
         # Moving to new file
         id_file += 1
-    print("Finished reading")
+    # print("Finished reading")
     return data

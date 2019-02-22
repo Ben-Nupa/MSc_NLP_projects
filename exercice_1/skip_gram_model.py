@@ -19,6 +19,8 @@ class SkipGram:
          Frequency of each word in the same order as words ids.
     embed_dim : int
         Dimension of embedding space.
+    id_to_word : dict
+        Dictionary mapping an ID to its word.
 
     Attributes
     ----------
@@ -38,6 +40,10 @@ class SkipGram:
         Output sparse representation of a vector, prior to the softmax.
     probabilities: ndarray (-1, vocab_size)
         Probability vector in the sparse space, after the softmax.
+    id_to_word : dict
+        Dictionary mapping an ID to its word.
+    x : csr_matrix
+        Sparse input matrix
     """
 
     def __init__(self, vocab_size: int, word_frequencies: np.ndarray, embed_dim=100, id_to_word=None):
@@ -277,7 +283,7 @@ class SkipGram:
         self.initialize_weights()
         loss_training_set = []
         for idx_epoch in range(n_epochs):
-            print("Performing epoch " + str(idx_epoch + 1) + "/" + str(n_epochs))
+            # print("Performing epoch " + str(idx_epoch + 1) + "/" + str(n_epochs))
             # Batch indices
             batch_indices = list(range(0, x.shape[0], batch_size))
             np.random.shuffle(batch_indices)
@@ -300,16 +306,10 @@ class SkipGram:
                 learning_rate *= decay_factor
             # Compute loss
             loss_value = self.compute_loss(x, y, y_ids)
-            print("loss:", loss_value)
+            # print("Loss:", loss_value)
             loss_training_set.append(loss_value)
 
-            # if idx_epoch > 500:
-            #    print(self.compute_loss(x, y, y_ids))
-            # loss_training_set.append(self.compute_loss(x, y, None))
-            # loss_value_none = self.compute_loss(x, y, None)
-            # print(loss_value_none)
-
-        print('Final learning rate = ', learning_rate)
+        # print('Final learning rate = ', learning_rate)
         # Plot
         fig = plt.figure()
         plt.title("Evolution of training loss through epochs")
@@ -319,19 +319,6 @@ class SkipGram:
         plt.legend()
         plt.savefig("loss_figure.png")
         plt.show()
-
-    def predict(self, x):
-        # TODO : delete this function ?
-        """
-        Predicts the class of the given data as one-hot encoded vectors.
-        @:return ndarray predictions (K, N)
-        """
-        self.forward_pass(x)
-        labels = np.argmax(self.probabilities, axis=0)
-        y_pred = np.zeros((x.shape[0], self.vocab_size))
-        for i in range(x.shape[0]):
-            y_pred[i, labels] = 1
-        return y_pred
 
     def embed(self, x) -> np.ndarray:
         """
@@ -351,9 +338,13 @@ class SkipGram:
 
     def save(self, path):
         """
-        Save the model using the save data methods in the tools module
-        :param id_model: integer, this id will be used to name the model
-        :return: void
+        Save the model using the save data methods in the tools module by mapping a word to its embedded representation
+        in a dictionary.
+
+        Parameters
+        ----------
+        path : str
+            Complete path to save the model
         """
         # Compute embed
         embed = self.embed(self.x)
@@ -375,26 +366,6 @@ class SkipGram:
 
         with open(path, 'wb') as file:
             pickle.dump(dictio, file)
-
-    def similarity(self, word1, word2) -> float:
-        """
-        Computes the cosine similarity between the two words. TODO : unknown words are mapped to one common vector
-
-        Parameters
-        ----------
-        word1, word2 : ndarray (1, vocab_size)
-            One-hot encoded representation of the input words.
-        word1 : ndarray (-1, vocab_size)
-            One-hot encoded representation of the input words.
-
-        Returns
-        ----------
-        out : float
-            Cosine similarity.
-        """
-        word1_embedded = self.embed(word1)
-        word2_embedded = self.embed(word2)
-        return word1_embedded.dot(word2_embedded) / (np.linalg.norm(word1_embedded) * np.linalg.norm(word2_embedded))
 
     @staticmethod
     def load(path):
