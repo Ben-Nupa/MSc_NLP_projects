@@ -56,5 +56,3 @@ Y_bath_indices UNION Negative_sampling_indices : check if intersection is empty.
 Batch size ~ 256 max, this way we should have a empty intersection almost each time. If not empty, we use a random new samples in the paper the distribution.  
 
 Drawbacks : INPUT/OUTPUT is center-word -> context words. But on next bath, we can have other context words (for the same word ?). We try not to pick the same words from the context word selection.  
-  
-Check the lecture of Andrew Ng on the negative sampling.  
