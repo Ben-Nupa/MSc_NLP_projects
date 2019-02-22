@@ -9,10 +9,10 @@ from tools import *
 __authors__ = ['Benoit Laures', 'Ayush Rai', 'Paul Asquin']
 __emails__ = ['benoit.laures@student.ecp.fr', 'ayush.rai2512@student-cs.fr', 'paul.asquin@student.ecp.fr']
 
-NUMBER_LINES = 1000
-N_EPOCHS = 50
+NUMBER_LINES = 100000
+N_EPOCHS = 500
 DECAY_INTERVAL = 5
-EMBEDDED_SIZE = 50
+EMBEDDED_SIZE = 300
 NEGATIVE_SAMPLING_SIZE = 5
 WINDOW_SIZE = 3
 LEARNING_RATE = 5e-3
@@ -49,7 +49,6 @@ def similarity(word1: str, word2: str, saved_model: dict) -> float:
     except KeyError:  # One word is unknown
         return -1
 
-    print(word1_embed.shape)
     return word1_embed.dot(word2_embed) / (np.linalg.norm(word1_embed) * np.linalg.norm(word2_embed))
 
 
