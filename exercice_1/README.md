@@ -1,7 +1,16 @@
 # Exercise 1: Skip-gram with negative-sampling from scratch
 
 ## Run
-First, `cd exercice_1`, we suppose that the data is in a repository `data`.
+To train:
+```bash
+python3 skipGram.py --text <relative_path_to_folder> --model <model_name.pkl>
+```
+To test:
+```bash
+python3 skipGram.py --text <relative_path_to_EN-SIMLEX-999.txt> --model <model_name.pkl> --test
+```
+
+For example if the data is in a repository `data`, `cd exercice_1`.
 
 To train, type:
 ```bash
@@ -11,7 +20,6 @@ To test, type:
 ```bash
 python3 skipGram.py --text data/EN-SIMLEX-999.txt --model model.pkl --test
 ```
-If the similarity score given is `-1`, this means we didn't had this word in our vocabulary.
 
 ## Pipeline
 One-hot encoding of data:
@@ -25,7 +33,7 @@ For the training:
 - Training with batch (a center word can be in several batches) with negative sampling for the softmax approximation, saturation on exponential to avoid overflow, gradient clipping to prevent it from exploding and SGD algorithm for the update.
 - By default, the learning rate is decayed (default factor is 0.99) after each epoch and the total loss is computed: the learning curve is plot at the end of the training.
 
-To compute the similarity, the cosine similarity is used.
+To compute the similarity, the cosine similarity is used. If the similarity score given is `-1`, this means we didn't had this word in our vocabulary (unknown words handling).
 
 ## Thought process
 
