@@ -40,7 +40,7 @@ def read_dataset(
     data = []
     id_file = 0
     while len(data) < number_lines:
-        with open(files[id_file]) as current_file:
+        with open(files[id_file], encoding='utf-8') as current_file:
             print("Opening file n°" + str(id_file) + ". Wrote " + str(len(data)) + "/" + str(number_lines))
 
             # Init line

@@ -1,5 +1,6 @@
 import numpy as np
 import re
+import scipy
 from scipy.sparse import lil_matrix
 from typing import List, Tuple
 
@@ -105,8 +106,8 @@ def generate_matrices_datasets(x_ids: List[int], y_ids: List[int], vocab_size: i
         Sparse one-hot encoded matrix of the output.
     """
     nb_pairs = len(x_ids)
-    x = lil_matrix((nb_pairs, vocab_size))
-    y = lil_matrix((nb_pairs, vocab_size))
+    x = lil_matrix((nb_pairs, vocab_size), dtype=scipy.int8)
+    y = lil_matrix((nb_pairs, vocab_size), dtype=scipy.int8)
     for i in range(nb_pairs):
         x[i, x_ids[i]] = 1
         y[i, y_ids[i]] = 1
