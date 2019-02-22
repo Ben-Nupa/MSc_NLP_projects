@@ -1,8 +1,8 @@
-import numpy as np
 import re
-import scipy
-from scipy.sparse import lil_matrix
 from typing import List, Tuple
+import numpy as np
+from scipy import int8
+from scipy.sparse import lil_matrix
 
 
 def text2sentences(path: str, nb_lines=100) -> List[List[str]]:
@@ -106,10 +106,9 @@ def generate_matrices_datasets(x_ids: List[int], y_ids: List[int], vocab_size: i
         Sparse one-hot encoded matrix of the output.
     """
     nb_pairs = len(x_ids)
-    x = lil_matrix((nb_pairs, vocab_size), dtype=scipy.int8)
-    y = lil_matrix((nb_pairs, vocab_size), dtype=scipy.int8)
+    x = lil_matrix((nb_pairs, vocab_size), dtype=int8)
+    y = lil_matrix((nb_pairs, vocab_size), dtype=int8)
     for i in range(nb_pairs):
         x[i, x_ids[i]] = 1
         y[i, y_ids[i]] = 1
     return x, y
-

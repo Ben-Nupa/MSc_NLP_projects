@@ -152,9 +152,9 @@ class SkipGram:
         self.forward_pass(x, y_ids)
 
         if type(y) == np.ndarray:
-            loss = -np.log(np.sum(y * self.probabilities, axis=1) + np.exp(1))  # If numpy arrays
+            loss = -np.log(np.sum(y * self.probabilities, axis=1) + 1e-5)  # If numpy arrays
         else:
-            loss = -np.log(np.sum(y.multiply(self.probabilities), axis=1) + np.exp(1))  # If using sparse matrix
+            loss = -np.log(np.sum(y.multiply(self.probabilities), axis=1) + 1e-5)  # If using sparse matrix
         return np.sum(loss) / x.shape[0]
 
     def compute_gradients(self, x, y):
@@ -201,7 +201,6 @@ class SkipGram:
         grad_w1, grad_w2 = self.compute_gradients(x, y)
         self.w1 -= learning_rate * grad_w1
         self.w2 -= learning_rate * grad_w2
-        print(self.w1.dtype)
 
     @staticmethod
     def compute_negative_sampling_distribution(word_frequencies: np.ndarray, exponent=0.75) -> np.ndarray:

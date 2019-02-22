@@ -1,8 +1,3 @@
-NUMBER_LINES = 10000
-N_EPOCHS = 10
-DECAY_INTERVAL = 1
-EMBEDDED_SIZE = 200
-
 import argparse
 import pandas as pd
 import matplotlib.pyplot as plt
@@ -14,6 +9,15 @@ from tools import *
 
 __authors__ = ['Benoit Laures', 'Ayush Rai', 'Paul Asquin']
 __emails__ = ['benoit.laures@student.ecp.fr', 'ayush.rai2512@student-cs.fr', 'paul.asquin@student.ecp.fr']
+
+NUMBER_LINES = 1000
+N_EPOCHS = 50
+DECAY_INTERVAL = 1
+EMBEDDED_SIZE = 200
+WINDOW_SIZE = 3
+NEGATIVE_SAMPLING = 3
+LEARNING_RATE = 5e-3
+BATCH_SIZE = 256
 
 
 def loadPairs(path):
@@ -36,7 +40,7 @@ def similarity(word1, word2, dictio):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument('--text', help='path containing training data', required=True)
-    parser.add_argument('--model', help='path to store/read model (when training/testing)', required=False)
+    parser.add_argument('--model', help='path to store/read model (when training/testing)', required=True)
     parser.add_argument('--test', help='enters test mode', action='store_true')
 
     opts = parser.parse_args()
@@ -56,10 +60,8 @@ if __name__ == "__main__":
         y = y.tocsr()
 
         sg = SkipGram(len(word_to_id), word_frequencies, embed_dim=EMBEDDED_SIZE, id_to_word=id_to_word)
-        sg.train(x, y, y_ids, n_epochs=N_EPOCHS, batch_size=512, neg_sampling_size=3, learning_rate=5e-3,
-                 decay_factor=0.99,
-                 decay_interval=DECAY_INTERVAL
-                 )
+        sg.train(x, y, None, n_epochs=N_EPOCHS, batch_size=BATCH_SIZE, neg_sampling_size=NEGATIVE_SAMPLING,
+                 learning_rate=LEARNING_RATE, decay_factor=0.99, decay_interval=DECAY_INTERVAL)
 
         np.save('models/' + str(N_EPOCHS) + '_' + str(NUMBER_LINES) + '_' + str(EMBEDDED_SIZE) + '_w1.npy', sg.w1)
         np.save('models/' + str(N_EPOCHS) + '_' + str(NUMBER_LINES) + '_' + str(EMBEDDED_SIZE) + '_w2.npy', sg.w2)
