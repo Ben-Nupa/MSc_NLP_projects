@@ -201,7 +201,7 @@ class SkipGram:
         grad_w1, grad_w2 = self.compute_gradients(x, y)
         self.w1 -= learning_rate * grad_w1
         self.w2 -= learning_rate * grad_w2
-        print(self.w1.dtype)
+        #print(self.w1.dtype)
 
     @staticmethod
     def compute_negative_sampling_distribution(word_frequencies: np.ndarray, exponent=0.75) -> np.ndarray:
@@ -277,7 +277,7 @@ class SkipGram:
                 learning_rate *= decay_factor
             # Compute loss
             loss_value = self.compute_loss(x, y, y_ids)
-            # print("loss:", loss_value)
+            print("loss:", loss_value)
             loss_training_set.append(loss_value)
 
             # if idx_epoch > 500:
