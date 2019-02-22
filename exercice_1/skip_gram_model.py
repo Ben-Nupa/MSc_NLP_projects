@@ -1,3 +1,5 @@
+REDUCE_FLOAT = False
+
 import numpy as np
 import matplotlib.pyplot as plt
 import pickle
@@ -64,8 +66,12 @@ class SkipGram:
             - w1 is randomly initialized following a uniform distribution over [-1/(2*embed_dim), 1/(2*embed_dim)].
             - w2 is initialized as a zero matrix.
         """
-        self.w1 = np.random.uniform(-1 / (2 * self.embed_dim), 1 / (2 * self.embed_dim),
-                                    size=(self.vocab_size, self.embed_dim)).astype(np.float16)
+        if REDUCE_FLOAT:
+            self.w1 = np.random.uniform(-1 / (2 * self.embed_dim), 1 / (2 * self.embed_dim),
+                                        size=(self.vocab_size, self.embed_dim)).astype(np.float16)
+        else:
+            self.w1 = np.random.uniform(-1 / (2 * self.embed_dim), 1 / (2 * self.embed_dim),
+                                        size=(self.vocab_size, self.embed_dim))
 
         self.w2 = np.zeros((self.embed_dim, self.vocab_size))
 
@@ -95,7 +101,10 @@ class SkipGram:
 
         else:  # Do negative sampling
             batch_size = len(y_ids)
-            self.probabilities = np.zeros(self.score.shape, dtype=np.float16)
+            if REDUCE_FLOAT:
+                self.probabilities = np.zeros(self.score.shape, dtype=np.float16)
+            else:
+                self.probabilities = np.zeros(self.score.shape)
 
             # Sample negative indices, a different set for each line
             neg_sampling_idx = np.random.choice(self.word_ids, size=batch_size * neg_sampling_size,
@@ -127,8 +136,13 @@ class SkipGram:
         neg_sampling_size : int
             Size of negative sampling. Advised is 5 - 20 for small datasets and 2 - 5 for large datasets.
         """
-        self.h = x.dot(self.w1).astype(np.float16)
-        self.score = self.h.dot(self.w2).astype(np.float16)
+        if REDUCE_FLOAT:
+            self.h = x.dot(self.w1).astype(np.float16)
+            self.score = self.h.dot(self.w2).astype(np.float16)
+        else:
+            self.h = x.dot(self.w1)
+            self.score = self.h.dot(self.w2)
+
         self.softmax(y_ids, neg_sampling_size)
 
     def compute_loss(self, x, y, y_ids=None) -> float:
@@ -174,14 +188,24 @@ class SkipGram:
             Gradients w.r.t w1 and w2. They have the same shape as their respective matrices.
         """
         # x.shape[0] is the batch size
-        g = ((self.probabilities - y) / x.shape[0]).astype(np.float16)  # Shape (-1, vocab_size)
-        grad_w2 = self.h.T.dot(g).astype(np.float16)  # Shape (embed_dim, vocab_size)
+        if REDUCE_FLOAT:
+            g = ((self.probabilities - y) / x.shape[0]).astype(np.float16)  # Shape (-1, vocab_size)
+            grad_w2 = self.h.T.dot(g).astype(np.float16)  # Shape (embed_dim, vocab_size)
 
-        g = g.dot(self.w2.T).astype(np.float16)  # Shape (-1, embed_dim)
-        grad_w1 = x.T.dot(g).astype(np.float16)  # Shape (vocab_size, embed_dim)
+            g = g.dot(self.w2.T).astype(np.float16)  # Shape (-1, embed_dim)
+            grad_w1 = x.T.dot(g).astype(np.float16)  # Shape (vocab_size, embed_dim)
 
-        grad_w1 = np.clip(grad_w1, 0.01, 20).astype(np.float16)
-        grad_w2 = np.clip(grad_w2, 0.01, 20).astype(np.float16)
+            grad_w1 = np.clip(grad_w1, 0.01, 20).astype(np.float16)
+            grad_w2 = np.clip(grad_w2, 0.01, 20).astype(np.float16)
+        else:
+            g = ((self.probabilities - y) / x.shape[0])  # Shape (-1, vocab_size)
+            grad_w2 = self.h.T.dot(g)  # Shape (embed_dim, vocab_size)
+
+            g = g.dot(self.w2.T)  # Shape (-1, embed_dim)
+            grad_w1 = x.T.dot(g)  # Shape (vocab_size, embed_dim)
+
+            grad_w1 = np.clip(grad_w1, 0.01, 20)
+            grad_w2 = np.clip(grad_w2, 0.01, 20)
 
         return grad_w1, grad_w2
 
@@ -276,7 +300,7 @@ class SkipGram:
                 learning_rate *= decay_factor
             # Compute loss
             loss_value = self.compute_loss(x, y, y_ids)
-            # print("loss:", loss_value)
+            print("loss:", loss_value)
             loss_training_set.append(loss_value)
 
             # if idx_epoch > 500:
@@ -293,6 +317,8 @@ class SkipGram:
         plt.ylabel("Loss")
         plt.plot(np.arange(1, n_epochs + 1), loss_training_set, label="Training set")
         plt.legend()
+        plt.savefig("loss_figure.png")
+        plt.show()
 
     def predict(self, x):
         # TODO : delete this function ?
@@ -473,26 +499,3 @@ class SkipGram:
         relative_error_w2 = compute_relative_error(analytical_grad_w2, numerical_grad_w2)
         print('Error gradient w1 =', np.mean(relative_error_w1))
         print('Error gradient w2 =', np.mean(relative_error_w2))
-
-
-'''
-    def save_model(self, id_model):
-        """
-        Save the model using the save data methods in the tools module
-        :param id_model: integer, this id will be used to name the model
-        :return: void
-        """
-        save_name = "save_model-" + str(id_model)
-        print("Saving model as", save_name)
-        save_data(data=[self.w1, self.h, self.w2, self.score, self.probabilities], name_file=save_name)
-
-    def load_model(self, id_model):
-        """
-        Load the model using a provided id to generate its name
-        :param id_model: integer
-        :return: void
-        """
-        save_name = "save_model-" + str(id_model)
-        print("Loading model as", save_name)
-        self.w1, self.h, self.w2, self.score, self.probabilities = load_data("save_model-" + str(id_model))
-'''

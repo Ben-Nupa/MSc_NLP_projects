@@ -4,6 +4,8 @@ import numpy as np
 from scipy import int8
 from scipy.sparse import lil_matrix
 
+REDUCE_FLOAT = False
+
 
 def text2sentences(path: str, nb_lines=100) -> List[List[str]]:
     # feel free to make a better tokenization/pre-processing
@@ -106,8 +108,14 @@ def generate_matrices_datasets(x_ids: List[int], y_ids: List[int], vocab_size: i
         Sparse one-hot encoded matrix of the output.
     """
     nb_pairs = len(x_ids)
-    x = lil_matrix((nb_pairs, vocab_size), dtype=int8)
-    y = lil_matrix((nb_pairs, vocab_size), dtype=int8)
+
+    if REDUCE_FLOAT:
+        x = lil_matrix((nb_pairs, vocab_size), dtype=int8)
+        y = lil_matrix((nb_pairs, vocab_size), dtype=int8)
+    else:
+        x = lil_matrix((nb_pairs, vocab_size))
+        y = lil_matrix((nb_pairs, vocab_size))
+
     for i in range(nb_pairs):
         x[i, x_ids[i]] = 1
         y[i, y_ids[i]] = 1

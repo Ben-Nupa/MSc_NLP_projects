@@ -1,47 +1,59 @@
-# NLP Homework
+# Exercise 1: Skip-gram with negative-sampling from scratch
 
-# To run the code
+## Run
 
-# Train
+To train, type:
 ```bash
 python3 skipGram.py --text data/1-billion-word-language-modeling-benchmark-r13output/training-monolingual.tokenized.shuffled --model model.pkl
 ```
-# Test
+To test, type:
 ```bash
 python3 skipGram.py --text data/EN-SIMLEX-999.txt --model model.pkl --test
 ```
 If the similarity score given is `-1`, this means we didn't had this word in our vocabulary.
 
-## TODO
-- Function to read all the files, one by one.  
-- Then, we need to finish the negative sampling part (already begun by Benoit)  
-- Training the network : try different architecture (linear model, no activation function for the hidden layer)  
-- Function to store the model : Paul  
-- Ways to increase the training speed  
+## Pipeline
+One-hot encoding of data:
+- Read file line by line until the desired number of lines is achieved
+- Data filtering : set to lowercase, remove all non alphanumerical characters except spaces and ', transform ' to spaces
+- Map each word to an ID and vice versa in a dictionnary
+- Generate the datasets in 2 different forms: list of indices of words and one-hot sparse encoded matrices. The i-th element of the X list corresponds to a center word and the i-th element of the Y list corresponds to a context word of this center word. For instance if the center word '20' has the contex words (let's say window size of 3) '52', '38', '11', '0', '124', '89'; we'll have `X = [..., 20, 20, 20, 20, 20, 20, ...]` and `Y = [..., 52, 38, 11, 0, 124, 89, ...]`.
 
-## Matrix creation
-x & y :  
-x = [id_center_word_0, id_center_word_1, ...]  
-y = [id_context_word_0, id_context_word_1, ...]  
+For the training:
+- Weights initialization: Uniform law over <img src="https://latex.codecogs.com/gif.latex?[\frac{-1}{2n_{embed}},&space;\frac{1}{2n_{embed}}]" title="[\frac{-1}{2n_{embed}}, \frac{1}{2n_{embed}}]" /> for the encoding W1 matrix and 0-matrix for the decoding W2 matrix.
+- Training with batch (a center word can be in several batches) with negative sampling for the softmax approximation, saturation on exponential to avoid overflow, gradient clipping to prevent it from exploding and SGD algorithm for the update.
+- By default, the learning rate is decayed (default factor is 0.99) after each epoch and the total loss is computed: the learning curve is plot at the end of the training.
 
-Then we create a one-hot matrix X, of size vocab_size * dataset_size (really sparse matrix)  
-For each center-word, this matrix gives us the context  
+To compute the similarity, the cosine similarity is used.
 
-## Negative sampling
+## Thought process
 
-Negative sampling : when we compute softmax (exp(v)/sum(exp(v))) : computing it is expensive because of huge vocabulary size.  
-Thus, we compute this only on the word over "negative word with samples".
-We don't want to go on each word of our 1M vector, we sample randomly words, we test if they are not in the the batch.  
-Y_bath_indices UNION Negative_sampling_indices : check if intersection is empty. If yes, continue with back propagation.  
-Batch size ~ 256 max, this way we should have a empty intersection almost each time. If not empty, we use a random new samples in the paper the distribution.  
+### Getting a working model
+The skip-gram model is simply a fully-connected neural network with one hidden layer without activation function, thus we built a class for this general kind of networks. A focus was made to compute the analytical gradients so as to make computation as effective as possible (numpy matrices-based operations and no 'for loop'): to check that the gradients were correct, we compared them to the numerical gradient scomputed with the central differencing scheme and by looking at the relative error. The following operations are applied:
 
-Drawbacks : INPUT/OUTPUT is center-word -> context words. But on next bath, we can have other context words (for the same word ?). We try not to pick the same words from the context word selection.  
-  
-Check the lecture of Andrew Ng on the negative sampling.  
-  
-## Work splitting
-Paul
-- read all the dataset function --> done
-- implement function to save : the models, the id2word & word2id dic, also freq vector --> done
-- add somewhere in the training a function that will store the model for instance every 10 epochs
-- check on colab if we can use CPU for more than 7h. --> Max 12h
+<img src="https://latex.codecogs.com/gif.latex?g=(p&space;-&space;y)/B" title="g=(p - y)/B" />
+
+<img src="https://latex.codecogs.com/gif.latex?\bigtriangledown&space;W_2&space;=&space;h^\top&space;g" title="\bigtriangledown W_2 = h^\top g" />
+
+<img src="https://latex.codecogs.com/gif.latex?g=gW_2^\top" title="g=gW_2^\top" />
+
+<img src="https://latex.codecogs.com/gif.latex?\bigtriangledown&space;W_1&space;=&space;x^\top&space;g" title="\bigtriangledown W_1 = x^\top g" />
+
+where <img src="https://latex.codecogs.com/gif.latex?y" title="y" /> is the one-hot encoded output, <img src="https://latex.codecogs.com/gif.latex?x" title="x" /> the one-hot encoded input, <img src="https://latex.codecogs.com/gif.latex?h" title="h" /> the hidden embedded representation and <img src="https://latex.codecogs.com/gif.latex?W_1,&space;\;&space;W_2" title="W_1, \; W_2" /> respectively the encoding and decoding matrices.
+
+### Optimising the model
+As asked, the model can be optimised, particularly for big datasets.
+
+Thus, to cope with the memory issues we had to:
+- change the matrices from Numpy arrays to Scipy sparse matrices.
+- change the data types of the matrices (defaults are float64 or int64) so we set to the minimum (float16 and int8).
+
+To speed up the computation, negative sampling is a good solution as it approximates the Softmax operation to avoid having to sum over the whole vocabulary which is very computationally expensive. For each example, a different set of negative words is sampled, even in a same batch: hence we get more diversity especially since, in our model, a center word is present in different lines of the training matrix (it's not regrouped), thus for a unique center word, different context words are used. It helped getting more speed and being able to train on bigger dataset.
+
+### Difficulties
+A big issue we faced and that we spent a very long time on was the exploding gradient problem which made the exponential computation in the softmax overflow, even with negative sampling. Thus, managed to solve this problem by putting a saturation before the exponential (values are in [-10, 10]) and we performed gradient clipping to prevent it from exploding.
+
+Besides, the model has to be trained on an enormous amount of data to display good results, thus it must undergo a very long phase of training (more than a day) which is very hard to perform analysis, optimizing parameters or just tests.
+
+## Sources
+- [1](http://cs231n.github.io/neural-networks-3/)
