@@ -1,21 +1,16 @@
-NUMBER_LINES = 200
+NUMBER_LINES = 10000
 N_EPOCHS = 10
-DECAY_INTERVAL = 5
+DECAY_INTERVAL = 1
+EMBEDDED_SIZE = 200
 
 import argparse
 import pandas as pd
 import matplotlib.pyplot as plt
-import time
-import glob
+import numpy as np
 
 from skip_gram_model import SkipGram
 from data_loader import *
 from tools import *
-
-# useful stuff
-import numpy as np
-# from scipy.special import expit
-from sklearn.preprocessing import normalize
 
 __authors__ = ['Benoit Laures', 'Ayush Rai', 'Paul Asquin']
 __emails__ = ['benoit.laures@student.ecp.fr', 'ayush.rai2512@student-cs.fr', 'paul.asquin@student.ecp.fr']
@@ -41,7 +36,7 @@ def similarity(word1, word2, dictio):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument('--text', help='path containing training data', required=True)
-    parser.add_argument('--model', help='path to store/read model (when training/testing)', required=True)
+    parser.add_argument('--model', help='path to store/read model (when training/testing)', required=False)
     parser.add_argument('--test', help='enters test mode', action='store_true')
 
     opts = parser.parse_args()
@@ -60,13 +55,15 @@ if __name__ == "__main__":
         x = x.tocsr()
         y = y.tocsr()
 
-        sg = SkipGram(len(word_to_id), word_frequencies, embed_dim=50, id_to_word=id_to_word)
-        sg.train(x, y, y_ids, n_epochs=N_EPOCHS, batch_size=16, neg_sampling_size=5, learning_rate=1e-1,
+        sg = SkipGram(len(word_to_id), word_frequencies, embed_dim=EMBEDDED_SIZE, id_to_word=id_to_word)
+        sg.train(x, y, y_ids, n_epochs=N_EPOCHS, batch_size=512, neg_sampling_size=3, learning_rate=5e-3,
                  decay_factor=0.99,
                  decay_interval=DECAY_INTERVAL
                  )
 
-        sg.save(opts.model)
+        np.save('models/' + str(N_EPOCHS) + '_' + str(NUMBER_LINES) + '_' + str(EMBEDDED_SIZE) + '_w1.npy', sg.w1)
+        np.save('models/' + str(N_EPOCHS) + '_' + str(NUMBER_LINES) + '_' + str(EMBEDDED_SIZE) + '_w2.npy', sg.w2)
+        # sg.save(opts.model)
 
     else:
         pairs = loadPairs(opts.text)
@@ -108,4 +105,4 @@ if __name__ == "__main__":
 
         print('END = ', time.time() - begin, "seconds")
 
-        plt.show()
+    plt.show()

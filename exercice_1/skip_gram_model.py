@@ -1,7 +1,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
-from tools import *
 import pickle
+from tools import *
 
 
 class SkipGram:
@@ -65,13 +65,12 @@ class SkipGram:
             - w2 is initialized as a zero matrix.
         """
         self.w1 = np.random.uniform(-1 / (2 * self.embed_dim), 1 / (2 * self.embed_dim),
-                                    size=(self.vocab_size, self.embed_dim))
+                                    size=(self.vocab_size, self.embed_dim)).astype(np.float16)
 
-        # self.w2 = np.zeros((self.embed_dim, self.vocab_size))
+        self.w2 = np.zeros((self.embed_dim, self.vocab_size))
 
-        self.w2 = np.random.uniform(-1 / (2 * self.embed_dim), 1 / (2 * self.embed_dim),
-                                    size=(self.embed_dim, self.vocab_size))
-
+        # self.w2 = np.random.uniform(-1 / (2 * self.embed_dim), 1 / (2 * self.embed_dim),
+        #                             size=(self.embed_dim, self.vocab_size)).astype(np.float16)
 
     def softmax(self, y_ids=None, neg_sampling_size=5):
         """
@@ -85,35 +84,34 @@ class SkipGram:
         neg_sampling_size : int
             Size of negative sampling. Advised is 5 - 20 for small datasets and 2 - 5 for large datasets.
         """
-        if y_ids is None:  # Don't use negative sampling: normal softmax computation
 
-            clip_score = self.score # - np.max(self.score)
+        if y_ids is None:  # Don't use negative sampling: normal softmax computation
+            clip_score = self.score
             clip_score = np.clip(clip_score, -10, 10)
             exp_s = np.exp(clip_score)
             exp_s_sum = np.sum(exp_s, axis=1).reshape(-1, 1)
             exp_s_sum = np.clip(exp_s_sum, 0, 100)
-            # print("exp_s", exp_s)
-            # print("exp_s sum", exp_s_sum)
             self.probabilities = exp_s / exp_s_sum
 
         else:  # Do negative sampling
             batch_size = len(y_ids)
-            self.probabilities = np.zeros(self.score.shape)
+            self.probabilities = np.zeros(self.score.shape, dtype=np.float16)
+
             # Sample negative indices, a different set for each line
             neg_sampling_idx = np.random.choice(self.word_ids, size=batch_size * neg_sampling_size,
                                                 p=self.neg_sampling_distrib) * np.array(
                 [i for i in range(batch_size) for j in range(neg_sampling_size)])
             # Add the batch examples
             neg_sampling_idx = np.append(neg_sampling_idx, np.array(y_ids) * np.arange(batch_size))
-            neg_sampling_idx = np.unravel_index(neg_sampling_idx, self.probabilities.shape)  # Remap indices to 2D array
-            # Compute softmax approximation
+            neg_sampling_idx = np.unravel_index(neg_sampling_idx, self.score.shape)  # Remap indices to 2D array
+
+            # Compute softmax approximation with clipping to avoid overflow
             clip_score = self.score[neg_sampling_idx].reshape(-1, neg_sampling_size + 1)
             clip_score = np.clip(clip_score, -10, 10)
             exp_s = np.exp(clip_score)
             exp_s_sum = np.sum(exp_s, axis=1).reshape(-1, 1)
             exp_s_sum = np.clip(exp_s_sum, 0, 100)
-            # print("exp_s_sum", exp_s_sum)
-            self.probabilities[neg_sampling_idx] = (exp_s / (exp_s_sum)).flatten()
+            self.probabilities[neg_sampling_idx] = (exp_s / exp_s_sum).flatten()
 
     def forward_pass(self, x, y_ids=None, neg_sampling_size=5):
         """
@@ -129,8 +127,8 @@ class SkipGram:
         neg_sampling_size : int
             Size of negative sampling. Advised is 5 - 20 for small datasets and 2 - 5 for large datasets.
         """
-        self.h = x.dot(self.w1)
-        self.score = self.h.dot(self.w2)
+        self.h = x.dot(self.w1).astype(np.float16)
+        self.score = self.h.dot(self.w2).astype(np.float16)
         self.softmax(y_ids, neg_sampling_size)
 
     def compute_loss(self, x, y, y_ids=None) -> float:
@@ -152,16 +150,12 @@ class SkipGram:
             Cross-entropy loss for the given batch.
         """
         self.forward_pass(x, y_ids)
-        # print("proba", self.probabilities)
-        # print("sum y proba", np.sum(y.multiply(self.probabilities), axis=1))
 
         if type(y) == np.ndarray:
-            loss = -np.log(np.sum(y * self.probabilities, axis=1) + np.exp(1))   # If numpy arrays
+            loss = -np.log(np.sum(y * self.probabilities, axis=1) + np.exp(1))  # If numpy arrays
         else:
             loss = -np.log(np.sum(y.multiply(self.probabilities), axis=1) + np.exp(1))  # If using sparse matrix
         return np.sum(loss) / x.shape[0]
-
-
 
     def compute_gradients(self, x, y):
         """
@@ -180,18 +174,14 @@ class SkipGram:
             Gradients w.r.t w1 and w2. They have the same shape as their respective matrices.
         """
         # x.shape[0] is the batch size
-        g = -(y - self.probabilities) / x.shape[0]  # Shape (-1, vocab_size)
-        grad_w2 = self.h.T.dot(g)  # Shape (embed_dim, vocab_size)
+        g = ((self.probabilities - y) / x.shape[0]).astype(np.float16)  # Shape (-1, vocab_size)
+        grad_w2 = self.h.T.dot(g).astype(np.float16)  # Shape (embed_dim, vocab_size)
 
-        g = g.dot(self.w2.T)  # Shape (-1, embed_dim)
-        grad_w1 = x.T.dot(g)  # Shape (vocab_size, embed_dim)
+        g = g.dot(self.w2.T).astype(np.float16)  # Shape (-1, embed_dim)
+        grad_w1 = x.T.dot(g).astype(np.float16)  # Shape (vocab_size, embed_dim)
 
-        grad_w1 = np.clip(grad_w1, 0.01, 20)
-        grad_w2 = np.clip(grad_w2, 0.01, 20)
-
-
-        # print("grad_w1", grad_w1)
-        # print("grad_w2", grad_w2)
+        grad_w1 = np.clip(grad_w1, 0.01, 20).astype(np.float16)
+        grad_w2 = np.clip(grad_w2, 0.01, 20).astype(np.float16)
 
         return grad_w1, grad_w2
 
@@ -211,6 +201,7 @@ class SkipGram:
         grad_w1, grad_w2 = self.compute_gradients(x, y)
         self.w1 -= learning_rate * grad_w1
         self.w2 -= learning_rate * grad_w2
+        print(self.w1.dtype)
 
     @staticmethod
     def compute_negative_sampling_distribution(word_frequencies: np.ndarray, exponent=0.75) -> np.ndarray:
@@ -263,6 +254,7 @@ class SkipGram:
         self.initialize_weights()
         loss_training_set = []
         for idx_epoch in range(n_epochs):
+            print("Performing epoch " + str(idx_epoch + 1) + "/" + str(n_epochs))
             # Batch indices
             batch_indices = list(range(0, x.shape[0], batch_size))
             np.random.shuffle(batch_indices)
@@ -282,7 +274,6 @@ class SkipGram:
 
             # Decay learning rate regularly
             if idx_epoch % decay_interval == 0:
-                print("Performed epoch " + str(idx_epoch + 1) + "/" + str(n_epochs))
                 learning_rate *= decay_factor
             # Compute loss
             loss_value = self.compute_loss(x, y, y_ids)
@@ -292,15 +283,15 @@ class SkipGram:
             # if idx_epoch > 500:
             #    print(self.compute_loss(x, y, y_ids))
             # loss_training_set.append(self.compute_loss(x, y, None))
-            loss_value_none = self.compute_loss(x, y, None)
+            # loss_value_none = self.compute_loss(x, y, None)
             # print(loss_value_none)
 
+        print('Final learning rate = ', learning_rate)
         # Plot
         fig = plt.figure()
         plt.title("Evolution of training loss through epochs")
         plt.xlabel("Epoch")
         plt.ylabel("Loss")
-        # print("len loss training set", len(loss_training_set))
         plt.plot(np.arange(1, n_epochs + 1), loss_training_set, label="Training set")
         plt.legend()
 
@@ -379,7 +370,6 @@ class SkipGram:
         word1_embedded = self.embed(word1)
         word2_embedded = self.embed(word2)
         return word1_embedded.dot(word2_embedded) / (np.linalg.norm(word1_embedded) * np.linalg.norm(word2_embedded))
-
 
     @staticmethod
     def load(path):
@@ -484,6 +474,8 @@ class SkipGram:
         relative_error_w2 = compute_relative_error(analytical_grad_w2, numerical_grad_w2)
         print('Error gradient w1 =', np.mean(relative_error_w1))
         print('Error gradient w2 =', np.mean(relative_error_w2))
+
+
 '''
     def save_model(self, id_model):
         """
