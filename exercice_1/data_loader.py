@@ -1,3 +1,5 @@
+REDUCE_FLOAT = False
+
 import numpy as np
 import re
 import scipy
@@ -106,8 +108,13 @@ def generate_matrices_datasets(x_ids: List[int], y_ids: List[int], vocab_size: i
         Sparse one-hot encoded matrix of the output.
     """
     nb_pairs = len(x_ids)
-    x = lil_matrix((nb_pairs, vocab_size), dtype=scipy.int8)
-    y = lil_matrix((nb_pairs, vocab_size), dtype=scipy.int8)
+    if REDUCE_FLOAT:
+        x = lil_matrix((nb_pairs, vocab_size), dtype=scipy.int8)
+        y = lil_matrix((nb_pairs, vocab_size), dtype=scipy.int8)
+    else:
+        x = lil_matrix((nb_pairs, vocab_size))
+        y = lil_matrix((nb_pairs, vocab_size))
+
     for i in range(nb_pairs):
         x[i, x_ids[i]] = 1
         y[i, y_ids[i]] = 1

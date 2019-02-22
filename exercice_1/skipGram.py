@@ -1,9 +1,11 @@
-NUMBER_LINES = 10000
+NUMBER_LINES = 100
 N_EPOCHS = 10
-DECAY_INTERVAL = 1
-EMBEDDED_SIZE = 200
-BATCH_SIZE = 512
+DECAY_INTERVAL = 5
+EMBEDDED_SIZE = 50
+BATCH_SIZE = 64
 NEGATIVE_SAMPLING_SIZE = 3
+LEARNING_RATE = 1e-2
+DECAY_FACTOR = 0.99
 
 import argparse
 import pandas as pd
@@ -58,8 +60,8 @@ if __name__ == "__main__":
         y = y.tocsr()
 
         sg = SkipGram(len(word_to_id), word_frequencies, embed_dim=EMBEDDED_SIZE, id_to_word=id_to_word)
-        sg.train(x, y, y_ids, n_epochs=N_EPOCHS, batch_size=BATCH_SIZE, neg_sampling_size=NEGATIVE_SAMPLING_SIZE, learning_rate=5e-3,
-                 decay_factor=0.99,
+        sg.train(x, y, y_ids, n_epochs=N_EPOCHS, batch_size=BATCH_SIZE, neg_sampling_size=NEGATIVE_SAMPLING_SIZE, learning_rate=LEARNING_RATE,
+                 decay_factor=DECAY_FACTOR,
                  decay_interval=DECAY_INTERVAL
                  )
 
