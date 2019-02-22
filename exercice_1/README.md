@@ -1,6 +1,7 @@
 # Exercise 1: Skip-gram with negative-sampling from scratch
 
 ## Run
+First, `cd exercice_1`, we suppose that the data is in a repository `data`.
 
 To train, type:
 ```bash
