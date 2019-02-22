@@ -484,24 +484,3 @@ class SkipGram:
         relative_error_w2 = compute_relative_error(analytical_grad_w2, numerical_grad_w2)
         print('Error gradient w1 =', np.mean(relative_error_w1))
         print('Error gradient w2 =', np.mean(relative_error_w2))
-'''
-    def save_model(self, id_model):
-        """
-        Save the model using the save data methods in the tools module
-        :param id_model: integer, this id will be used to name the model
-        :return: void
-        """
-        save_name = "save_model-" + str(id_model)
-        print("Saving model as", save_name)
-        save_data(data=[self.w1, self.h, self.w2, self.score, self.probabilities], name_file=save_name)
-
-    def load_model(self, id_model):
-        """
-        Load the model using a provided id to generate its name
-        :param id_model: integer
-        :return: void
-        """
-        save_name = "save_model-" + str(id_model)
-        print("Loading model as", save_name)
-        self.w1, self.h, self.w2, self.score, self.probabilities = load_data("save_model-" + str(id_model))
-'''

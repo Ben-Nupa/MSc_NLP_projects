@@ -3,6 +3,12 @@ import re
 
 
 def display_data(data, number_of_lines=5):
+    """
+    Display the dataset line by line to check the read_dataset function
+    :param data:
+    :param number_of_lines:
+    :return:
+    """
     i = 0
     while i < number_of_lines:
         print(data[i])
@@ -56,38 +62,3 @@ def read_dataset(
     print("Finished reading")
     return data
 
-'''
-def save_data(data, name_file):
-    """
-    Save the given data to the disk storing with provided name_file
-    :param data:
-    :param name_file:
-    :return:
-    """
-    with open(name_file, 'wb') as file:
-        pickle.dump(data, file)
-
-
-def load_data(name_file):
-    """
-    Load the data back with the provided name_file
-    :param name_file:
-    :return:
-    """
-    with open(name_file, 'rb') as file:
-        data = pickle.load(file)
-    return data
-
-
-def test():
-    """
-    Testing tools functions : read_dataset, save and restore data etc.
-    :return:
-    """
-    data = read_dataset()
-    path_save = "dataset"
-    save_data(data, path_save)
-    data = load_data(path_save)
-    display_data(data)
-
-'''
