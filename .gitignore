@@ -22,6 +22,8 @@ training_logs/
 # Training and output
 data/
 results/
+*.gz
 
 # Other
 sources.txt
+*.pdf
