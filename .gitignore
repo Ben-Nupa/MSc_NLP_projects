@@ -22,6 +22,7 @@ training_logs/
 # Training and output
 data/
 results/
+resources/
 *.gz
 
 # Other
