@@ -1,8 +1,8 @@
 Natural Language Processing Course - Assignment 2 - Aspect Based Sentiment Analysis
 
-1) Authors : Benoit Laures (Email : benoit.laures@student.ecp.fr)
-          Ayush K. Rai (Email : ayush.rai2512@student-cs.fr)
-          Paul Asquin (Email : paul.asquin@student.ecp.fr)
+1) Authors : Benoit Laures
+          Ayush K. Rai
+          Paul Asquin
 
 2) In order to run the code:
 
