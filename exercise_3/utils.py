@@ -1,7 +1,7 @@
 import numpy as np
 
 
-def extract_training_set_as_text(path: str, is_training_set: bool, nb_dialogues=-1) -> tuple:
+def extract_dataset_as_text(path: str, is_training_set: bool, nb_dialogues=-1) -> tuple:
     """
     Extract the dataset as text lists. If it is a training dataset, the first answer will be the correct one, others are
     distractors.
@@ -42,13 +42,14 @@ def extract_training_set_as_text(path: str, is_training_set: bool, nb_dialogues=
         for line in file:
             words = line.split()
             idx_line = int(words[0])
+            if idx_line == 1:
+                idx_dialogue += 1
+                if idx_dialogue == nb_dialogues + 1:
+                    break
 
             # Get my persona
             if words[1] + ' ' + words[2] == 'your persona:':
-                if idx_line == 1:
-                    idx_dialogue += 1
-                    if idx_dialogue == nb_dialogues + 1:
-                        break
+                if len(my_personae) != idx_dialogue:
                     my_personae.append([])
                 my_personae[-1].append(' '.join(str(word) for word in words[3:]))
 
@@ -94,29 +95,36 @@ def extract_training_set_as_text(path: str, is_training_set: bool, nb_dialogues=
 
 
 def print_dialogue(my_personae: list, other_personae: list, line_indices: list, utterances: list, answers: list,
-                   nb_dialogue=1):
+                   idx_dialogue=-1):
     """
-    Prints a complete dialogue extracted from a training set. See function 'extract_training_set_as_text' for details
-    for the parameters.
+    Prints a complete dialogue extracted from a training set. See function 'extract_dataset_as_text' for details of the
+    parameters.
     """
-    for i in range(nb_dialogue):
+
+    def print_precise_dialogue(idx_dialogue):
         print('\n----------------------')
         print('My persona:')
-        for characteristic in my_personae[i]:
+        for characteristic in my_personae[idx_dialogue]:
             print(characteristic)
         print('############')
         print('Other persona:')
-        for characteristic in other_personae[i]:
+        for characteristic in other_personae[idx_dialogue]:
             print(characteristic)
         print('############')
-        for j in range(len(utterances[i])):
-            print(str(line_indices[i][j]) + '-U: ' + utterances[i][j])
-            print('A:', answers[i][j][0])
+        for j in range(len(utterances[idx_dialogue])):
+            print(str(line_indices[idx_dialogue][j]) + '-U: ' + utterances[idx_dialogue][j])
+            print('A:', answers[idx_dialogue][j][0])
+
+    if 0 <= idx_dialogue < len(line_indices):
+        print_precise_dialogue(idx_dialogue)
+    else:
+        for i in range(len(line_indices)):
+            print_precise_dialogue(i)
 
 
-NB_DIALOGUES = 5
+NB_DIALOGUES = -1
 
-my_personae, other_personae, line_indices, utterances, answers = extract_training_set_as_text(
+my_personae, other_personae, line_indices, utterances, answers = extract_dataset_as_text(
     'data/train_both_original.txt', True, NB_DIALOGUES)
 
-print_dialogue(my_personae, other_personae, line_indices, utterances, answers, NB_DIALOGUES)
+print_dialogue(my_personae, other_personae, line_indices, utterances, answers, 53)
