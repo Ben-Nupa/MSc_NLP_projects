@@ -85,12 +85,7 @@ def extract_dataset_as_text(path: str, is_training_set: bool, nb_dialogues=-1) -
                             continue
                         distractors = statement.split('|')
                         answers[-1][-1] += distractors
-    print('Loaded data:')
-    print(np.shape(my_personae))
-    print(np.shape(other_personae))
-    print(np.shape(line_indices))
-    print(np.shape(utterances))
-    print(np.shape(answers))
+    print('Loaded ' + str(len(line_indices)) + ' dialogues')
     return my_personae, other_personae, line_indices, utterances, answers
 
 
@@ -122,9 +117,10 @@ def print_dialogue(my_personae: list, other_personae: list, line_indices: list, 
             print_precise_dialogue(i)
 
 
-NB_DIALOGUES = -1
+if __name__ == '__main__':
+    NB_DIALOGUES = 5
 
-my_personae, other_personae, line_indices, utterances, answers = extract_dataset_as_text(
-    'data/train_both_original.txt', True, NB_DIALOGUES)
+    my_personae, other_personae, line_indices, utterances, answers = extract_dataset_as_text(
+        'data/train_both_original.txt', True, NB_DIALOGUES)
 
-print_dialogue(my_personae, other_personae, line_indices, utterances, answers, 53)
+    print_dialogue(my_personae, other_personae, line_indices, utterances, answers, 0)
