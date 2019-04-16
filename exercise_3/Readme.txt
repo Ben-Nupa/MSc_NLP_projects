@@ -19,8 +19,8 @@ Generative Model:
 --------------------
 
 For training
-python NLPex3.py --train --model ./model/generative_model.pickle --text ./data/train_both_original.txt --gen Geneative_Mode
+python NLPex3.py --train --model ./model/generative_model.pth --text ./data/train_both_original.txt --gen Geneative_Mode
 
 For Testing
-python NLPex3.py --test --model ./model/generative_model.pickle --text ./data/valid_both_original.txt --gen Geneative_Mode
+python NLPex3.py --test --model ./model/generative_model.pth --text ./data/valid_both_original.txt --gen Geneative_Mode
 
