@@ -5,19 +5,19 @@ import numpy as np
 from sklearn.preprocessing import normalize
 from Retrieval_Dialog_Model import *
 
-__authors__ = ['Paul Asquin', 'Benoit Laures', 'Ayush Rai']
+__authors__ = ['Paul Asquin', 'Benoit Laures', 'Ayush K. Rai']
 __emails__ = ['paul.asquin@student.ecp.fr', 'benoit.laures@student.ecp.fr', 'ayush.rai2512@student-cs.fr']
 
-NB_DIALOGUES_TRAIN = 2
-NB_DIALOGUES_VAL = 10
-NUM_EPOCHS = 10
+NB_DIALOGUES_TRAIN = 50
+NB_DIALOGUES_VAL = -1
+NUM_EPOCHS = 40
 PATH_TO_PRETRAINED_GLOVE = 'resource/glove.6B.50d.txt'
 EMBEDDING_DIM = 50
 HIDDEN_LAYER_SIZE = 50
 
 LEARNING_RATE = 1e-4
 L2_PENALTY= 1e-4
-NUM_EPOCHS= 10
+COMPUTE_ACCURACY = True
 
 PATH_WORD_TO_ID = './model/word_to_id.pkl'
 PATH_ID_TO_WORD = './model/id_to_word.pkl'
@@ -56,8 +56,10 @@ if __name__ == '__main__':
         torch.save(retrieval_model,opts.model)
 
     elif opts.test and not opts.gen:
+
+        #Perform Evaluation on the Validation and Test Dataset
         print('Test Mode for Retrieval Based Model')
-        retrieval_dialog_agent.test_model(opts.model,opts.text, PATH_WORD_TO_ID,PATH_ID_TO_WORD ,NB_DIALOGUES_VAL)
+        retrieval_dialog_agent.test_model(opts.model,opts.text, PATH_WORD_TO_ID,PATH_ID_TO_WORD ,NB_DIALOGUES_VAL,compute_accuracy=COMPUTE_ACCURACY)
 
         print('Finished Testing')
         

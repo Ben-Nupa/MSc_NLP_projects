@@ -224,11 +224,20 @@ class Retrieval_Dialog_Model:
                     utterances[-1].append(get_tokens_from_sentence(exchange[0]))
                     # Training set: answer is known
                     if is_training_set:
+
                         answers[-1].append([get_tokens_from_sentence(exchange[1])])  # Correct answers
+                        correct_answer = get_tokens_from_sentence(exchange[1]) # Newly Added 
+
                         for statement in exchange[2:]:  # Wrong answers
+                     
                             if statement == '':
                                 continue
                             for distractor in statement.split('|'):
+                                splitted_distractor = get_tokens_from_sentence(distractor)
+
+                                if splitted_distractor == correct_answer:
+                            	    continue
+
                                 answers[-1][-1].append(get_tokens_from_sentence(distractor))
                             
                     # Testing set: answer is unknown
@@ -346,7 +355,7 @@ class Retrieval_Dialog_Model:
                 pickle.dump(id_to_word, dict_file2)
             dataframe_name = 'training_df'
         
-        dataframe_to_save = pd.DataFrame(columns=['context', 'response', 'label', 'idx_line'])
+        dataframe_to_save = pd.DataFrame(columns=['context', 'response', 'label', 'idx_line','text'])
         idx_dataframe = 0
         for idx_dialogue in range(len(line_indices)):
             if len(dataframe_to_save) >= max_size_df:
@@ -378,6 +387,7 @@ class Retrieval_Dialog_Model:
                 # Get response and label
                 for idx_answer in range(len(answers[idx_dialogue][idx_utterance])):
                     response_ids = []
+                    
                     for token in answers[idx_dialogue][idx_utterance][idx_answer]:
                         response_ids.append(self.get_word_id(word_to_id, token))
 
@@ -392,9 +402,10 @@ class Retrieval_Dialog_Model:
                     if len(response_ids) > max_context_len:
                         response_ids = response_ids[-max_context_len:]
 
-                    dataframe_to_save.loc[len(dataframe_to_save)] = [0, 0, label, line_indices[idx_dialogue][idx_utterance]]
+                    dataframe_to_save.loc[len(dataframe_to_save)] = [0, 0, label, line_indices[idx_dialogue][idx_utterance],0]
                     dataframe_to_save['context'][len(dataframe_to_save) - 1] = context_ids
                     dataframe_to_save['response'][len(dataframe_to_save) - 1] = response_ids
+                    dataframe_to_save['text'][len(dataframe_to_save) - 1] = ' '.join(answers[idx_dialogue][idx_utterance][idx_answer])
     
         dataframe_to_save.to_csv('dataframes/{0}{1}.csv'.format(dataframe_name, idx_dataframe), index=False)
 
@@ -512,7 +523,7 @@ class Retrieval_Dialog_Model:
 
         #-----------------------------------------------------------------------------------------------------------------------------------------------------------
 
-    def test_model(self, retrieval_dialog_model_path,test_data_path,path_word_to_id,path_id_to_word,NB_DIALOGUES_VAL):
+    def test_model(self, retrieval_dialog_model_path,test_data_path,path_word_to_id,path_id_to_word,NB_DIALOGUES_VAL,compute_accuracy=False):
         """Training with dataframe"""
         print(str(datetime.datetime.now()).split('.')[0], "Starting Testing...\n")
 
@@ -542,6 +553,8 @@ class Retrieval_Dialog_Model:
 
         retrieval_dialog_model.eval()
 
+        total = 0
+        correct = 0
 
         for validation_df_name in glob.glob('dataframes/validation_df*'):
             validation_df = pd.read_csv(validation_df_name)  # Shuffle
@@ -553,8 +566,17 @@ class Retrieval_Dialog_Model:
             for cntxt in context_list:
 
                 val_temp_df = validation_df.loc[validation_df['context'] == cntxt]
+
+                #Store the Groundtruth and Match with the Best Retrieved Answer
+                groundtruth_answer = val_temp_df.iloc[0]['text']
+
+                #print(type(groundtruth_answer))
+                #print(groundtruth_answer)
+
                 val_temp_df = val_temp_df.drop(val_temp_df.index[0])
                 score_temp_list = []
+
+                total += 1
 
                 for idx, row in val_temp_df.iterrows():
 
@@ -577,19 +599,26 @@ class Retrieval_Dialog_Model:
 
 
                 #print(val_temp_df)
-
-
                 #print(val_temp_df['Predicted_Score'])
                 #print(val_temp_df['Predicted_Score'].idxmax())
 
                 best_answer_df = val_temp_df.loc[val_temp_df['Predicted_Score'].idxmax()]
 
-                best_answer = self.get_word_from_id(id_to_word,best_answer_df)
+                #best_answer = self.get_word_from_id(id_to_word,best_answer_df)
 
-                print(best_answer_df['idx_line'],best_answer)            
-            
+                selected_best_answer = best_answer_df['text']
 
-        print('Best Retrieved Answers')
+                # Checking whether selected answer is same as the groundtruth
+                if(selected_best_answer==groundtruth_answer):
+                	correct += 1
+
+                print(best_answer_df['idx_line'],selected_best_answer)
+
+        if compute_accuracy:
+        	accuracy = (100*correct)/total
+        	print('\nRetrieval Accuracy :', accuracy)
+
+        #print('\nBest Retrieved Answers')
         #----------------------------------------------------------------------------------------------------------------------------------------------------------
 
 
