@@ -728,10 +728,10 @@ class Retrieval_Dialog_Model:
                 #Store the Groundtruth and Match with the Best Retrieved Answer
                 groundtruth_answer = val_temp_df.iloc[0]['text']
 
+
                 #print(type(groundtruth_answer))
                 #print(groundtruth_answer)
 
-                val_temp_df = val_temp_df.drop(val_temp_df.index[0])
                 score_temp_list = []
 
                 total += 1
@@ -757,6 +757,12 @@ class Retrieval_Dialog_Model:
 
                 val_temp_df['Predicted_Score'] = score_temp_list
 
+                # print('--------------')
+                # for idx, row in val_temp_df.iterrows():
+                #     print(str(row['text']) + ' --> ' + str(row['Predicted_Score']))
+                # print('--------------')
+
+
 
                 #print(val_temp_df)
                 #print(val_temp_df['Predicted_Score'])
@@ -769,6 +775,8 @@ class Retrieval_Dialog_Model:
                 selected_best_answer = best_answer_df['text']
 
                 # Checking whether selected answer is same as the groundtruth
+                # print('TRUE', groundtruth_answer)
+                # print('PRED', selected_best_answer)
                 if(selected_best_answer==groundtruth_answer):
                 	correct += 1
 

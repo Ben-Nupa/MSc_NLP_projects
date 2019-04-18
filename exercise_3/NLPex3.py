@@ -9,9 +9,9 @@ __authors__ = ['Paul Asquin', 'Benoit Laures', 'Ayush K. Rai']
 __emails__ = ['paul.asquin@student.ecp.fr', 'benoit.laures@student.ecp.fr', 'ayush.rai2512@student-cs.fr']
 
 NB_DIALOGUES_TRAIN = 50
-NB_DIALOGUES_VAL = 200
-NUM_EPOCHS = 200
-PATH_TO_PRETRAINED_GLOVE = 'resource/glove.6B.50d.txt'
+NB_DIALOGUES_VAL = 50
+NUM_EPOCHS = 5
+PATH_TO_PRETRAINED_GLOVE = 'data/glove.6B.50d.txt'
 EMBEDDING_DIM = 50
 HIDDEN_LAYER_SIZE = 50
 DROPOUT_PROB = 0.1
