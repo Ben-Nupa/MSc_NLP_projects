@@ -9,11 +9,12 @@ __authors__ = ['Paul Asquin', 'Benoit Laures', 'Ayush K. Rai']
 __emails__ = ['paul.asquin@student.ecp.fr', 'benoit.laures@student.ecp.fr', 'ayush.rai2512@student-cs.fr']
 
 NB_DIALOGUES_TRAIN = 50
-NB_DIALOGUES_VAL = -1
-NUM_EPOCHS = 40
+NB_DIALOGUES_VAL = 200
+NUM_EPOCHS = 200
 PATH_TO_PRETRAINED_GLOVE = 'resource/glove.6B.50d.txt'
 EMBEDDING_DIM = 50
 HIDDEN_LAYER_SIZE = 50
+DROPOUT_PROB = 0.1
 
 LEARNING_RATE = 1e-4
 L2_PENALTY= 1e-4
@@ -47,7 +48,7 @@ if __name__ == '__main__':
         retrieval_dialog_agent.save_data_on_disk(word_to_id, id_to_word ,tr_my_personae, tr_other_personae, tr_line_indices, tr_utterances, tr_answers, True)
 
         #Create a Dual LSTM Model
-        retrieval_model = retrieval_dialog_agent.creating_model(EMBEDDING_DIM,HIDDEN_LAYER_SIZE, 0.1, id_to_vec)
+        retrieval_model = retrieval_dialog_agent.creating_model(EMBEDDING_DIM,HIDDEN_LAYER_SIZE,DROPOUT_PROB, id_to_vec)
 
         # Train the Model
         retrieval_model = retrieval_dialog_agent.train_model_df(retrieval_model, word_to_id, LEARNING_RATE,L2_PENALTY,NUM_EPOCHS)

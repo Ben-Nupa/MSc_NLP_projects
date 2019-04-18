@@ -22,12 +22,18 @@ device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
 torch.cuda.set_device(device)
 
-#-------------------Dual Encoder---------------------------------------------------------------------------------------------------------------------
+#-------------------DualEncoder LSTM---------------------------------------------------------------------------------------------------------------------
 
 class DualEncoder(nn.Module):
     """Dual LSTM encoder"""
      
     def __init__(self, encoder):
+        """Constructor Function
+
+        Parameters
+        ==========
+        Encoder Class Object
+        """
         super(DualEncoder, self).__init__()
         self.encoder = encoder
         self.hidden_size = self.encoder.hidden_size
@@ -36,6 +42,18 @@ class DualEncoder(nn.Module):
         self.M = nn.Parameter(M, requires_grad = True)
 
     def forward(self, context_tensor, response_tensor):
+        """
+        Performs a forward pass on the DualEncoder LSTM Architecture
+
+        Parameters
+        =========
+        context_tensor : torch tensor for context
+        response_tensor : torch tensor for response
+
+        Return
+        ======
+        The score for the response tensor given a context tensor
+        """
         
         context_last_hidden = self.encoder(context_tensor) #dimensions: (batch_size x hidden_size)
         response_last_hidden = self.encoder(response_tensor) #dimensions: (batch_size x hidden_size)
@@ -51,12 +69,23 @@ class DualEncoder(nn.Module):
 
         return score
 
-#----------------------Encoder---------------------------------------------------------------------------------------------------------------------------
+#----------------------Encoder LSTM---------------------------------------------------------------------------------------------------------------------------
 
 class Encoder(nn.Module):
     """LSTM encoder"""
 
-    def __init__(self, emb_size, hidden_size, p_dropout, id_to_vec): 
+    def __init__(self, emb_size, hidden_size, p_dropout, id_to_vec):
+            """
+            Constructor for Encoder Class
+
+            Parameter
+            =========
+
+            emb_size : Size of the embedding layer
+            hidden_size : Size of the hidden size (no. of neurons in hidden layer)
+            p_dropout : Dropout Rate
+            id_to_vec : dictionary containing mapping from word_id to vec obtainbed from Glove
+            """
     
             super(Encoder, self).__init__()
              
@@ -72,6 +101,9 @@ class Encoder(nn.Module):
             self.init_weights(id_to_vec)
              
     def init_weights(self, id_to_vec):
+        """
+        Performs Xavier initialization of the Layer
+        """
         init.uniform_(self.lstm.weight_ih_l0, a = -0.01, b = 0.01)
         init.orthogonal_(self.lstm.weight_hh_l0)
         self.lstm.weight_ih_l0.requires_grad = True
@@ -85,6 +117,8 @@ class Encoder(nn.Module):
         self.embedding.weight = nn.Parameter(embedding_weights, requires_grad = True)
             
     def forward(self, inputs):
+        """Performs the forward pass for the encoder
+        """
         embeddings = self.embedding(inputs)
         _, (last_hidden, _) = self.lstm(embeddings) #dimensions: (num_layers * num_directions x batch_size x hidden_size)
         last_hidden = self.dropout_layer(last_hidden[-1])#access last lstm layer, dimensions: (batch_size x hidden_size)
@@ -95,8 +129,13 @@ class Encoder(nn.Module):
 #----------------------------------------------------------------------------------------------------------------------------------------
 
 class Retrieval_Dialog_Model:
+    """
+    Retrieval Dialog Model Class
+    """
     def __init__(self):
-                
+        """
+        Creates model and dataframes subdirectory if they don't exist
+        """
         if os.path.isdir("./model"):
             print('Model subdirectory already exists')
         else:
@@ -109,9 +148,6 @@ class Retrieval_Dialog_Model:
         else:
             os.makedirs('./dataframes')
             print('Dataframes subdirectory created')
-
-
-
 
     def normalize(self,sentence: str) -> List[str]:
         """
@@ -296,6 +332,28 @@ class Retrieval_Dialog_Model:
         #---------------------------------------------------------------------------------------------------------------------------------
 
     def creating_training_variables(self,path_to_training_set, path_to_glove_weights, embedding_dim=50, nb_dialogues=-1):
+        """
+        This function is used to map word_to_id dictionary to vector corresponding to the ids of the word (derived from training data) for training dataset.
+        The vectors are extracted from Glove Embeddings
+
+        Parameters
+        =========
+        path_to_training_set : train data path
+        path_to_glove_weights : path to glove embeddings
+        embedding_size = size of the embeding layer
+        nb_dialogues : number of dialogues to train from training dataset
+
+        Return
+        ======
+        id_to_vec : dictionary that maps unique word id (from training dataset) to word vectors from Glove
+        word_to_id : dictionary that maps words (in training dataset) to their unique ids
+        id_to_word : dictionary that maps unique ids to words (in training dataset)
+        my_personae : list of persona of the person1
+        other_personae : list persona of the person2
+        line_indices : list of line number of the utterance in the original training data file
+        utterances : list of utterances (context)
+        answers : list of responses for a given utterance (the first entry is the groundtruth)
+        """
         print(str(datetime.datetime.now()).split('.')[0], "Creating variables for training...")
     
         word_to_id, id_to_word ,my_personae, other_personae, line_indices, utterances, answers = self.extract_dataset_as_text(path_to_training_set, True, nb_dialogues)
@@ -311,6 +369,25 @@ class Retrieval_Dialog_Model:
         #---------------------------------------------------------------------------------------------------------------------------------
 
     def creating_validation_variables(self,path_to_validation_set, nb_dialogues=-1):
+        """
+        This function is used to map word_to_id dictionary to vector corresponding to the ids of the word (derived from training data) for validation dataset.
+        The vectors are extracted from Glove Embeddings
+
+        Parameters
+        =========
+        path_to_validation_set : validation data path
+        path_to_glove_weights : path to glove embeddings
+        embedding_size = size of the embeding layer
+        nb_dialogues : number of dialogues to train from validation dataset (default = -1)
+
+        Return
+        ======
+        my_personae : list of persona of the person1
+        other_personae : list persona of the person2
+        line_indices : list of line number of the utterance in the original validation data file
+        utterances : list of utterances (context)
+        answers : list of responses for a given utterance (the first entry is the groundtruth)
+        """
         print(str(datetime.datetime.now()).split('.')[0], "Creating variables for validations...")
     
         _, _ ,my_personae, other_personae, line_indices, utterances, answers = self.extract_dataset_as_text(path_to_validation_set, True, nb_dialogues)
@@ -320,7 +397,21 @@ class Retrieval_Dialog_Model:
 
         #-----------------------------------------------------------------------------------------------------------------------------------
 
-    def creating_model(self, emb_size, hidden_size, p_dropout, id_to_vec):
+    def creating_model(self, emb_size, hidden_size,p_dropout, id_to_vec):
+        """
+        Creates an object of the DualEncoder Class
+    
+        Parameters
+        ==========
+        emb_size : size of the embedding layer
+        hidden_size : size of the hidden layer
+        p_dropout : dropout probability
+        id_to_vec : id_to_vec dictionary containing mapping from unique word ids (from training dataset) to vectors obtained from Glove Embeddings
+
+        Return
+        ======
+        an object of DualEncoder Class
+        """
 
         print(str(datetime.datetime.now()).split('.')[0], "Calling model...")
 
@@ -336,7 +427,7 @@ class Retrieval_Dialog_Model:
         #------------------------------------------------------------------------------------------------------------------------------------
 
     def get_word_id(self, word_to_id: dict, token: str) -> int:
-        """Retrieves the ID of the word if known, else returns -1 (ID for unknown words)."""
+        """Retrieves the ID of the word if known, else returns 0 (ID for unknown words)."""
         try:
             id_word = word_to_id[token]
         except KeyError:
@@ -346,14 +437,30 @@ class Retrieval_Dialog_Model:
         #-----------------------------------------------------------------------------------------------------------------------------------
 
     def save_data_on_disk(self, word_to_id, id_to_word ,my_personae, other_personae, line_indices, utterances, answers, is_training, max_context_len=50, max_size_df=10000):
-        dataframe_name = 'validation_df'
+        """
+        Function to add train and val data extracted from raw data files into structured dataframe format
+
+        Parameters
+        =========
+        word_to_id : dictionary that maps words (in training dataset) to their unique ids
+        id_to_word : dictionary that maps unique ids to words (in training dataset)
+        my_personae : list of persona of the person1
+        other_personae : other_personae : list persona of the person2
+        line_indices : list of line number of the utterance in the original validation data file
+        utterances : list of utterances (context)
+        answers : answers : list of responses for a given utterance (the first entry is the groundtruth)
+        is_training : Bool value to indicate if it is training phase
+        max_context_len : Maximum length of the context vector (default = 50)
+        max_size_df : Maximum dataframes to save
+        """
+        dataframe_name = 'validationdf_'
         if is_training:
             with open('model/word_to_id' + '.pkl', 'wb') as dict_file:
                 pickle.dump(word_to_id, dict_file)
 
             with open('model/id_to_word' + '.pkl', 'wb') as dict_file2:
                 pickle.dump(id_to_word, dict_file2)
-            dataframe_name = 'training_df'
+            dataframe_name = 'trainingdf_'
         
         dataframe_to_save = pd.DataFrame(columns=['context', 'response', 'label', 'idx_line','text'])
         idx_dataframe = 0
@@ -412,6 +519,16 @@ class Retrieval_Dialog_Model:
         #-----------------------------------------------------------------------------------------------------------------------------------------------------
 
     def plot_loss(self, train_loss_data,epoch_list):
+
+        """
+        Plots and saves the training loss per epoch
+
+        Parameters
+        ==========
+
+        train_loss : list of train loss per epoch
+        epoch_list : list of epoch
+        """
     
         plt.plot(epoch_list, train_loss_data, linewidth=2.0,linestyle='-',color='darkcyan',label='Train')
         plt.title('Plot '+'for Training Loss')
@@ -423,7 +540,17 @@ class Retrieval_Dialog_Model:
         #-------------------------------------------------------------------------------------------------------------------------------------------------------
 
     def train_model_df(self, dual_encoder, word_to_id, learning_rate=1e-4, l2_penalty=1e-4, nb_epochs=25):
-        """Training with dataframe"""
+        """Extracts structured data from saved dataframes and converts them into pytorch tensor and performs training
+
+        Parameters
+        ==========
+        dual_encoder : DualEncoder class object
+        word_to_id : dictionary that maps words (in training dataset) to their unique ids
+        learning_rate : learning_rate
+        l2_penalty : l2_penalty
+        nb_epochs : Number of epochs
+
+        """
         print(str(datetime.datetime.now()).split('.')[0], "Starting training...\n")
 
         optimizer = torch.optim.Adam(dual_encoder.parameters(), lr = learning_rate, weight_decay = l2_penalty)
@@ -441,7 +568,12 @@ class Retrieval_Dialog_Model:
 
             # First: use training set
             dual_encoder.train()
-            for training_df_name in glob.glob('dataframes/training_df*'):
+
+            train_list = glob.glob('dataframes/trainingdf*')
+            train_list_sorted = sorted(train_list,key=lambda train_list:self.get_number(train_list))
+
+
+            for training_df_name in train_list_sorted:
                 training_df = pd.read_csv(training_df_name).sample(frac=1)  # Shuffle
             
                 for idx, row in training_df.iterrows():
@@ -502,8 +634,21 @@ class Retrieval_Dialog_Model:
         return dual_encoder
 
         #---------------------------------------------------------------------------------------------------------------------------------------------------------
+    def get_number(self,mystr):
+        """
+        A utility function to retrieve Integer part of a string
+        """
+        b = mystr[mystr.find('_')+1 : mystr.find('.')]
+        return int(b)
+
+        #----------------------------------------------------------------------------------------------------------------------------------------------------------
 
     def get_word_from_id(self, id_to_word,word_id_list):
+
+        """
+        Maps the unique word ids in the prediction to the corresponding words (based on training data) 
+
+        """
 
         answer = []
 
@@ -524,7 +669,16 @@ class Retrieval_Dialog_Model:
         #-----------------------------------------------------------------------------------------------------------------------------------------------------------
 
     def test_model(self, retrieval_dialog_model_path,test_data_path,path_word_to_id,path_id_to_word,NB_DIALOGUES_VAL,compute_accuracy=False):
-        """Training with dataframe"""
+        """Performs prediction on the Validation or Test Dataset by using the saved trained model
+        Parameters
+        ==========
+        retrieval_dialog_model_path : path to the saved retrieval model trained on the training dataset
+        test_data_path : path to the validation and test data
+        path_word_to_id : path to word to id dictionary stored in pickle format
+        path_id_to_word : path to id to word dictionary stored in pickle format
+        NB_DIALOGUES_VAL : number of dialogues to test in validation and test set (-1 for all)
+        compute accuracy : bool value (True to print the accuracy) 
+        """
         print(str(datetime.datetime.now()).split('.')[0], "Starting Testing...\n")
 
         retrieval_dialog_model = torch.load(retrieval_dialog_model_path)
@@ -556,12 +710,16 @@ class Retrieval_Dialog_Model:
         total = 0
         correct = 0
 
-        for validation_df_name in glob.glob('dataframes/validation_df*'):
+        val_list = glob.glob('dataframes/validationdf*')
+        val_list_sorted = sorted(val_list,key=lambda val_list:self.get_number(val_list))
+
+        for validation_df_name in val_list_sorted:
             validation_df = pd.read_csv(validation_df_name)  # Shuffle
 
             context_list = list(dict.fromkeys(list(validation_df['context'])))
 
             #print(len(context_list))
+            print('Validation File: ', validation_df_name)
 
             for cntxt in context_list:
 
@@ -579,6 +737,8 @@ class Retrieval_Dialog_Model:
                 total += 1
 
                 for idx, row in val_temp_df.iterrows():
+
+
 
                     context_ids = list(map(int, row['context'][1:-1].split(', ')))
                     response_ids = list(map(int, row['response'][1:-1].split(', ')))
@@ -612,37 +772,13 @@ class Retrieval_Dialog_Model:
                 if(selected_best_answer==groundtruth_answer):
                 	correct += 1
 
-                print(best_answer_df['idx_line'],selected_best_answer)
+                #print(best_answer_df['idx_line'],selected_best_answer)
 
         if compute_accuracy:
-        	accuracy = (100*correct)/total
-        	print('\nRetrieval Accuracy :', accuracy)
+            accuracy = (100*correct)/total
+            print('Correct: ', correct)
+            print('Total: ', total)
+            print('\nRetrieval Accuracy :', accuracy)
 
         #print('\nBest Retrieved Answers')
         #----------------------------------------------------------------------------------------------------------------------------------------------------------
-
-
-    def load(self, path):
-        pass
-
-
-        #-----------------------------------------------------------------------------------------------------------------------------------------------------------
-
-    def save(self, path):
-        pass
-
-
-        #------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-    def train(self, data):
-        pass
-
-
-        #-------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-    def findBest(self, utterance, options):
-        pass
-
-
-
-        #----------------------------------------------------------------------------------------------------------------------------------------------------------------
