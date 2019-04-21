@@ -6,8 +6,8 @@ from Retrieval_Dialog_Model import *
 __authors__ = ['Paul Asquin', 'Benoit Laures', 'Ayush K. Rai']
 __emails__ = ['paul.asquin@student.ecp.fr', 'benoit.laures@student.ecp.fr', 'ayush.rai2512@student-cs.fr']
 
-NB_DIALOGUES_TRAIN = -1
-NB_DIALOGUES_VAL = -1
+NB_DIALOGUES_TRAIN = 1000
+NB_DIALOGUES_VAL = 50
 NUM_EPOCHS = 25
 PATH_TO_PRETRAINED_GLOVE = 'resource/glove.6B.50d.txt'
 EMBEDDING_DIM = 50

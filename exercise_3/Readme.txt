@@ -21,6 +21,9 @@ For Validation/Testing
     For example:
         python NLPex3.py --test --model model/retrieval_model.pth --text data/valid_both_original.txt
 
+
+By default, the model is trained on 1000 dialogues (about 320,000 training examples) and tested on 50 dialogues (about 16,000 examples). If it takes too much time, you can diminish this number with the variables `NB_DIALOGUES_TRAIN` and `NB_DIALOGUES_VAL` located in the file `NLPex3.py`.
+
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 Generative Dialog Agent:
 ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
