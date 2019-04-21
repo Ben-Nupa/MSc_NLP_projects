@@ -9,10 +9,17 @@ Code is successfully tested on Python >=3.5, PyTorch >=1.0
 2) Create the `resource` folder in the same directory as the NLPex3.py and put these downloaded embedding inside it (or put it in any folder and modify the variable `PATH_TO_PRETRAINED_GLOVE`.
 
 For Training
-python NLPex3.py --train --model ./model/retrieval_model.pth --text ./data/train_both_original.txt
+    python NLPex3.py --train --model <path_to_model> --text <path_to_training_data>
+
+    For example:
+        python NLPex3.py --train --model model/retrieval_model.pth --text data/train_both_original.txt
+
 
 For Validation/Testing
-python NLPex3.py --test --model ./model/retrieval_model.pth --text ./data/valid_both_original.txt
+    python NLPex3.py --test --model <path_to_model> --text <path_to_validation_data>
+
+    For example:
+        python NLPex3.py --test --model model/retrieval_model.pth --text data/valid_both_original.txt
 
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 Generative Dialog Agent:
