@@ -1,13 +1,12 @@
-
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 Retrieval Based Dialog Agent:
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-Code is successfully tested on Anaconda Python 3.6, PyTorch 1.0.1, Cuda-10.0
+Code is successfully tested on Python >=3.5, PyTorch >=1.0
 
 # To run the Code
 
 1) Download 50 dimensional Pretrained Glove Embeddings (trained on Common Crawl Dataset) from https://www.kaggle.com/watts2/glove6b50dtxt#glove.6B.50d.txt
-2) Create the resource folder in the same directory as the NLPex3.py and put these downloaded embedding inside it
+2) Create the `resource` folder in the same directory as the NLPex3.py and put these downloaded embedding inside it (or put it in any folder and modify the variable `PATH_TO_PRETRAINED_GLOVE`.
 
 For Training
 python NLPex3.py --train --model ./model/retrieval_model.pth --text ./data/train_both_original.txt
