@@ -3,22 +3,24 @@ from sklearn.feature_extraction.text import TfidfVectorizer
 import pickle as pkl
 import numpy as np
 from sklearn.preprocessing import normalize
+import warnings
+warnings.filterwarnings("ignore")
 from Retrieval_Dialog_Model import *
 
 __authors__ = ['Paul Asquin', 'Benoit Laures', 'Ayush K. Rai']
 __emails__ = ['paul.asquin@student.ecp.fr', 'benoit.laures@student.ecp.fr', 'ayush.rai2512@student-cs.fr']
 
-NB_DIALOGUES_TRAIN = 50
-NB_DIALOGUES_VAL = 50
-NUM_EPOCHS = 5
-PATH_TO_PRETRAINED_GLOVE = 'data/glove.6B.50d.txt'
+NB_DIALOGUES_TRAIN = -1
+NB_DIALOGUES_VAL = -1
+NUM_EPOCHS = 25
+PATH_TO_PRETRAINED_GLOVE = 'resource/glove.6B.50d.txt'
 EMBEDDING_DIM = 50
 HIDDEN_LAYER_SIZE = 50
-DROPOUT_PROB = 0.1
+DROPOUT_PROB = 0.5
 
 LEARNING_RATE = 1e-4
 L2_PENALTY= 1e-4
-COMPUTE_ACCURACY = True
+COMPUTE_ACCURACY = False
 
 PATH_WORD_TO_ID = './model/word_to_id.pkl'
 PATH_ID_TO_WORD = './model/id_to_word.pkl'
@@ -39,7 +41,7 @@ if __name__ == '__main__':
     retrieval_dialog_agent = Retrieval_Dialog_Model()
 
     if opts.train and not opts.gen:
-        print('Training Mode for Retrieval Based Model')
+        #print('Training Mode for Retrieval Based Model')
         
         # Get Training Data and Create Training Variables
         id_to_vec, word_to_id, id_to_word ,tr_my_personae, tr_other_personae, tr_line_indices, tr_utterances, tr_answers = retrieval_dialog_agent.creating_training_variables(opts.text,PATH_TO_PRETRAINED_GLOVE,embedding_dim=EMBEDDING_DIM,nb_dialogues=NB_DIALOGUES_TRAIN)
@@ -59,14 +61,14 @@ if __name__ == '__main__':
     elif opts.test and not opts.gen:
 
         #Perform Evaluation on the Validation and Test Dataset
-        print('Test Mode for Retrieval Based Model')
+        #print('Test Mode for Retrieval Based Model')
         retrieval_dialog_agent.test_model(opts.model,opts.text, PATH_WORD_TO_ID,PATH_ID_TO_WORD ,NB_DIALOGUES_VAL,compute_accuracy=COMPUTE_ACCURACY)
 
-        print('Finished Testing')
+        #print('Finished Testing')
         
         
     elif opts.train and opts.gen:
-        print('Generative Model Training')
+        print('Generative Model Training. We did not attempt this part')
 
         # opts.gen can be a string
 
@@ -83,7 +85,7 @@ if __name__ == '__main__':
         pass
 
     elif opts.test and opts.gen:
-        print('Generative Model Testing')
+        print('Generative Model Testing. We did not attempt this part')
         # Load train dataset for Generative Model
 
         # Train the Generative Model

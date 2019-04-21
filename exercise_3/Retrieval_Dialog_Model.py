@@ -137,17 +137,21 @@ class Retrieval_Dialog_Model:
         Creates model and dataframes subdirectory if they don't exist
         """
         if os.path.isdir("./model"):
-            print('Model subdirectory already exists')
+            #print('Model subdirectory already exists')
+            print(' ')
         else:
             os.makedirs('./model')
-            print('Model subdirectory created')
+            #print('Model subdirectory created')
+            print(' ')
 
 
         if os.path.isdir("./dataframes"):
-            print('Dataframes subdirectory already exists')
+            #print('Dataframes subdirectory already exists')
+            print(' ')
         else:
             os.makedirs('./dataframes')
-            print('Dataframes subdirectory created')
+            #print('Dataframes subdirectory created')
+            print(' ')
 
     def normalize(self,sentence: str) -> List[str]:
         """
@@ -285,7 +289,7 @@ class Retrieval_Dialog_Model:
                             for distractor in statement.split('|'):
                                 answers[-1][-1].append(get_tokens_from_sentence(distractor))
                             
-        print('Loaded ' + str(len(line_indices)) + ' dialogues')
+        #print('Loaded ' + str(len(line_indices)) + ' dialogues')
         if is_training_set:
             return word_to_id, id_to_word ,my_personae, other_personae, line_indices, utterances, answers
         else:
@@ -354,7 +358,7 @@ class Retrieval_Dialog_Model:
         utterances : list of utterances (context)
         answers : list of responses for a given utterance (the first entry is the groundtruth)
         """
-        print(str(datetime.datetime.now()).split('.')[0], "Creating variables for training...")
+        #print(str(datetime.datetime.now()).split('.')[0], "Creating variables for training...")
     
         word_to_id, id_to_word ,my_personae, other_personae, line_indices, utterances, answers = self.extract_dataset_as_text(path_to_training_set, True, nb_dialogues)
         id_to_vec = self.create_id_to_vec(word_to_id, path_to_glove_weights)
@@ -363,7 +367,7 @@ class Retrieval_Dialog_Model:
         v[:] = np.random.randn(*v.shape)*0.01
         id_to_vec[-1] = torch.FloatTensor(torch.from_numpy(v))
 
-        print(str(datetime.datetime.now()).split('.')[0], "Variables created.\n")
+        #print(str(datetime.datetime.now()).split('.')[0], "Variables created.\n")
         return id_to_vec, word_to_id, id_to_word ,my_personae, other_personae, line_indices, utterances, answers
 
         #---------------------------------------------------------------------------------------------------------------------------------
@@ -388,11 +392,11 @@ class Retrieval_Dialog_Model:
         utterances : list of utterances (context)
         answers : list of responses for a given utterance (the first entry is the groundtruth)
         """
-        print(str(datetime.datetime.now()).split('.')[0], "Creating variables for validations...")
+        #print(str(datetime.datetime.now()).split('.')[0], "Creating variables for validations...")
     
         _, _ ,my_personae, other_personae, line_indices, utterances, answers = self.extract_dataset_as_text(path_to_validation_set, True, nb_dialogues)
 
-        print(str(datetime.datetime.now()).split('.')[0], "Variables created.\n")
+        #print(str(datetime.datetime.now()).split('.')[0], "Variables created.\n")
         return my_personae, other_personae, line_indices, utterances, answers
 
         #-----------------------------------------------------------------------------------------------------------------------------------
@@ -413,14 +417,14 @@ class Retrieval_Dialog_Model:
         an object of DualEncoder Class
         """
 
-        print(str(datetime.datetime.now()).split('.')[0], "Calling model...")
+        #print(str(datetime.datetime.now()).split('.')[0], "Calling model...")
 
         encoder = Encoder(emb_size, hidden_size, p_dropout, id_to_vec)
 
         dual_encoder = DualEncoder(encoder)
 
-        print(str(datetime.datetime.now()).split('.')[0], "Model created.\n")
-        print(dual_encoder)
+        #print(str(datetime.datetime.now()).split('.')[0], "Model created.\n")
+        #print(dual_encoder)
     
         return dual_encoder.to(device)
 
@@ -551,7 +555,7 @@ class Retrieval_Dialog_Model:
         nb_epochs : Number of epochs
 
         """
-        print(str(datetime.datetime.now()).split('.')[0], "Starting training...\n")
+        #print(str(datetime.datetime.now()).split('.')[0], "Starting training...\n")
 
         optimizer = torch.optim.Adam(dual_encoder.parameters(), lr = learning_rate, weight_decay = l2_penalty)
         loss_func = torch.nn.BCEWithLogitsLoss()
@@ -560,7 +564,7 @@ class Retrieval_Dialog_Model:
         epochs_list = []
           
         for epoch in range(nb_epochs):
-            print("Epoch : ", epoch, " / ", nb_epochs)
+            #print("Epoch : ", epoch, " / ", nb_epochs)
             sum_loss_training = 0
             nb_iter_tr = 0
             sum_loss_validation = 0
@@ -623,13 +627,13 @@ class Retrieval_Dialog_Model:
         
             #print('Num Iter: ', nb_iter_tr)
             training_loss = sum_loss_training/nb_iter_tr
-            print('Training loss =', training_loss)
+            #print('Training loss =', training_loss)
             training_loss_list.append(training_loss)
             epochs_list.append(epoch)
         
             #print('Validation loss =', sum_loss_validation / nb_iter_val)
                 
-        print(str(datetime.datetime.now()).split('.')[0], "Training and validation epochs finished.")
+        #print(str(datetime.datetime.now()).split('.')[0], "Training and validation epochs finished.")
         self.plot_loss(training_loss_list,epochs_list)
         return dual_encoder
 
@@ -679,24 +683,24 @@ class Retrieval_Dialog_Model:
         NB_DIALOGUES_VAL : number of dialogues to test in validation and test set (-1 for all)
         compute accuracy : bool value (True to print the accuracy) 
         """
-        print(str(datetime.datetime.now()).split('.')[0], "Starting Testing...\n")
+        #print(str(datetime.datetime.now()).split('.')[0], "Starting Testing...\n")
 
         retrieval_dialog_model = torch.load(retrieval_dialog_model_path)
         retrieval_dialog_model.to(device)
 
-        print('Retrieval Model Loaded Successful')
+        #print('Retrieval Model Loaded Successful')
 
         with open(path_word_to_id, "rb") as dict_file:
             word_to_id = pickle.load(dict_file)
 
         #print(word_to_id)
 
-        print('Loaded Word to id dict')
+        #print('Loaded Word to id dict')
 
         with open(path_id_to_word, "rb") as dict_file2:
             id_to_word = pickle.load(dict_file2)
 
-        print('Loaded id to word dict')
+        #print('Loaded id to word dict')
 
         #print(id_to_word)
 
@@ -719,7 +723,7 @@ class Retrieval_Dialog_Model:
             context_list = list(dict.fromkeys(list(validation_df['context'])))
 
             #print(len(context_list))
-            print('Validation File: ', validation_df_name)
+            #print('Validation File: ', validation_df_name)
 
             for cntxt in context_list:
 
@@ -780,7 +784,7 @@ class Retrieval_Dialog_Model:
                 if(selected_best_answer==groundtruth_answer):
                 	correct += 1
 
-                #print(best_answer_df['idx_line'],selected_best_answer)
+                print(best_answer_df['idx_line'],selected_best_answer)
 
         if compute_accuracy:
             accuracy = (100*correct)/total
