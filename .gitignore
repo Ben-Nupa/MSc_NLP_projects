@@ -24,6 +24,8 @@ data/
 results/
 resources/
 *.gz
+model/
+dataframes/
 
 # Other
 sources.txt
