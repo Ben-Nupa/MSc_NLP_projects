@@ -63,7 +63,7 @@ if __name__ == "__main__":
     if not opts.test:
         # sentences = text2sentences(opts.text)
         # print("Loading from", opts.text)
-        sentences = read_dataset(path_to_dataset_folder=opts.text, number_lines=NUMBER_LINES)
+        sentences = read_dataset(path_to_file=opts.text, number_lines=NUMBER_LINES)
         # print('Number of sentences = ', len(sentences))
         word_to_id, id_to_word = map_words(sentences)
         # print('Number of words = ', len(word_to_id))
