@@ -311,14 +311,14 @@ class SkipGram:
 
         # print('Final learning rate = ', learning_rate)
         # Plot
-        fig = plt.figure()
-        plt.title("Evolution of training loss through epochs")
-        plt.xlabel("Epoch")
-        plt.ylabel("Loss")
-        plt.plot(np.arange(1, n_epochs + 1), loss_training_set, label="Training set")
-        plt.legend()
-        plt.savefig("loss_figure.png")
-        plt.show()
+        # fig = plt.figure()
+        # plt.title("Evolution of training loss through epochs")
+        # plt.xlabel("Epoch")
+        # plt.ylabel("Loss")
+        # plt.plot(np.arange(1, n_epochs + 1), loss_training_set, label="Training set")
+        # plt.legend()
+        # plt.savefig("loss_figure.png")
+        # plt.show()
 
     def embed(self, x) -> np.ndarray:
         """
